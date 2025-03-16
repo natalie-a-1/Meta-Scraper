@@ -1,0 +1,40 @@
+# Dependency directories
+node_modules/
+.npm
+
+# Build artifacts
+out/
+dist/
+*.vsix
+
+# VS Code specific
+.vscode-test/
+.vscode/
+*.vsix
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+
+# Test images that contain personal data
+test-image/*.jpg
+test-image/*.jpeg
+test-image/*.png
+test-image/*.gif
+test-image/*.webp
+test-image/*.tiff
+
+# Exiftool temp files
+*_original 
