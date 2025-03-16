@@ -37,9 +37,6 @@ This comprehensive guide will help you effectively test the Meta-Scraper extensi
       <li>Restart VS Code after installation</li>
     </ol>
   </div>
-  <div style="flex: 1;">
-    <img src="https://via.placeholder.com/300x200?text=VSIX+Installation" alt="VSIX Installation" width="300"/>
-  </div>
 </div>
 
 ### Method 2: Run in Development Mode (For developers)
@@ -55,9 +52,6 @@ This comprehensive guide will help you effectively test the Meta-Scraper extensi
       <li>Test your extension in this development window</li>
       <li>Changes to code require restarting the debugging session</li>
     </ol>
-  </div>
-  <div style="flex: 1;">
-    <img src="https://via.placeholder.com/300x200?text=Development+Mode" alt="Development Mode" width="300"/>
   </div>
 </div>
 
@@ -76,9 +70,6 @@ This comprehensive guide will help you effectively test the Meta-Scraper extensi
       <li>Right-click again and select <strong>"Clean Image Metadata"</strong></li>
       <li>View metadata again to verify cleaning was successful</li>
     </ol>
-  </div>
-  <div style="flex: 1;">
-    <img src="https://via.placeholder.com/300x200?text=Test+With+Own+Images" alt="Testing with Own Images" width="300"/>
   </div>
 </div>
 
@@ -102,7 +93,6 @@ The script adds:
 - Author information
 
 <div align="center">
-  <img src="https://via.placeholder.com/600x250?text=Before+and+After+Metadata+Cleaning" alt="Before and After Metadata Cleaning" width="600"/>
 </div>
 
 ---

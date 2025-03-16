@@ -11,10 +11,7 @@ A powerful Visual Studio Code extension that protects your privacy by viewing an
 ## 🎬 Demo Video
 
 <div align="center">
-  <p><i>A video demonstration will be available here.</i></p>
-  <p>
-    <img src="https://via.placeholder.com/640x360?text=Video+Demo+Coming+Soon" alt="Video Demo Placeholder" width="600"/>
-  </p>
+  <div style="padding:65.03% 0 0 0;position:relative;"><iframe src="https://player.vimeo.com/video/1066392522?h=7f45f96e0f&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="example"></iframe></div><script src="https://player.vimeo.com/api/player.js"></script>
 </div>
 
 ---
@@ -29,7 +26,6 @@ A powerful Visual Studio Code extension that protects your privacy by viewing an
 
 <div align="center">
   <p><b>Right-click on any image file to access Meta-Scraper functions</b></p>
-  <img src="https://via.placeholder.com/400x250?text=Right-Click+Menu+Screenshot" alt="Right-click Menu" width="400"/>
 </div>
 
 ## 🛡️ Why Cleaning Image Metadata Is Critical
@@ -66,7 +62,6 @@ Meta-Scraper protects you by completely removing this hidden data while preservi
       <li>A new document will open showing all metadata in JSON format</li>
     </ol>
   </div>
-  <img src="https://via.placeholder.com/300x200?text=View+Metadata+Screenshot" alt="View Metadata Screenshot" width="300"/>
 </div>
 
 ### Cleaning Metadata
@@ -80,7 +75,6 @@ Meta-Scraper protects you by completely removing this hidden data while preservi
       <li>The image will be replaced with a metadata-free version</li>
     </ol>
   </div>
-  <img src="https://via.placeholder.com/300x200?text=Clean+Metadata+Screenshot" alt="Clean Metadata Screenshot" width="300"/>
 </div>
 
 ---

@@ -45,9 +45,6 @@ Before you can publish the extension, you'll need to set up a few things:
       </li>
     </ol>
   </div>
-  <div style="flex: 1;">
-    <img src="https://via.placeholder.com/300x200?text=PAT+Creation" alt="Creating PAT Token" width="300"/>
-  </div>
 </div>
 
 ---
@@ -66,10 +63,6 @@ vsce package
 
 This will generate a file named `metascraper-0.0.1.vsix` (or similar with your version number) in the current directory.
 
-<div align="center">
-  <img src="https://via.placeholder.com/600x100?text=VSIX+Package+Created" alt="VSIX Package Created" width="600"/>
-</div>
-
 ---
 
 ## 🧪 Testing Before Publishing
@@ -87,9 +80,6 @@ Always test your packaged extension before publishing:
       <li>Check that the extension icon displays correctly</li>
       <li>Ensure the README is formatted properly</li>
     </ol>
-  </div>
-  <div style="flex: 1;">
-    <img src="https://via.placeholder.com/300x200?text=Testing+VSIX" alt="Testing VSIX" width="300"/>
   </div>
 </div>
 
@@ -118,9 +108,6 @@ When you're ready to publish:
       </li>
     </ol>
   </div>
-  <div style="flex: 1;">
-    <img src="https://via.placeholder.com/300x200?text=Create+Publisher" alt="Create Publisher" width="300"/>
-  </div>
 </div>
 
 ### Step 2: Login and Publish
@@ -135,10 +122,6 @@ vsce publish
 ```
 
 If successful, your extension will be available on the marketplace within a few minutes!
-
-<div align="center">
-  <img src="https://via.placeholder.com/600x150?text=Publication+Successful" alt="Publication Successful" width="600"/>
-</div>
 
 ### For Future Updates
 
