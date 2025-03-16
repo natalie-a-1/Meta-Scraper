@@ -11,7 +11,7 @@ A powerful Visual Studio Code extension that protects your privacy by viewing an
 ## 🎬 Demo Video
 
 <div align="center">
-  <video src="./images/output.mp4" width="600" controls></video>
+  <video src="https://github.com/natalie-a-1/Meta-Scraper/blob/main/images/output.mp4?raw=true" width="600" controls></video>
 </div>
 
 ---
