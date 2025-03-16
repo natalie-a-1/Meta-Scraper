@@ -1,96 +1,179 @@
-# Testing Guide for the Image Metadata Scraper Extension
+# <img src="./images/icon.png" alt="Meta-Scraper Logo" width="30"/> Testing Guide for Meta-Scraper
 
-This guide provides comprehensive instructions for testing the Image Metadata Scraper extension.
+<div align="center">
+  
+[![Version](https://img.shields.io/badge/version-0.0.1-blue.svg)](https://marketplace.visualstudio.com/items?itemName=natalie-a-1.metascraper)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-## Testing Methods
+</div>
 
-### Method 1: Install from VSIX package (Recommended for normal testing)
+This comprehensive guide will help you effectively test the Meta-Scraper extension to ensure all features are working correctly.
 
-1. Install the extension from the VSIX file:
-   - Open VS Code
-   - Press `Ctrl+Shift+X` (or `Cmd+Shift+X` on Mac) to open the Extensions view
-   - Click the "..." menu in the top-right corner
-   - Select "Install from VSIX..."
-   - Navigate to the `.vsix` file in this directory
-   - VS Code will install the extension
+---
 
-2. Restart VS Code after installation
+## 📋 Table of Contents
 
-### Method 2: Run in development mode (Recommended for development)
+- [Testing Installation Methods](#-testing-installation-methods)
+- [Testing with Sample Images](#-testing-with-sample-images)
+- [Feature Testing Checklist](#-feature-testing-checklist)
+- [Troubleshooting](#-troubleshooting)
+- [Advanced Testing](#-advanced-testing)
+- [Reporting Issues](#-reporting-issues)
 
-1. Open this project in VS Code:
-   ```bash
-   code --new-window .
-   ```
+---
 
-2. Press F5 or go to Run > Start Debugging
-   - This will launch a new "Extension Development Host" window
-   - The extension will be active in this window
+## 🚀 Testing Installation Methods
 
-3. In the Extension Development Host window, you can test your extension
-   - Changes made to the extension code will require restarting the debugging session
+### Method 1: Install from VSIX package (Recommended for end-users)
 
-## Testing with Images
+<div style="display: flex; align-items: top;">
+  <div style="flex: 2;">
+    <ol>
+      <li>Open VS Code</li>
+      <li>Press <code>Ctrl+Shift+X</code> (or <code>Cmd+Shift+X</code> on Mac) to open Extensions</li>
+      <li>Click the "..." menu in the top-right corner</li>
+      <li>Select "Install from VSIX..."</li>
+      <li>Navigate to and select <code>metascraper-0.0.1.vsix</code></li>
+      <li>Restart VS Code after installation</li>
+    </ol>
+  </div>
+  <div style="flex: 1;">
+    <img src="https://via.placeholder.com/300x200?text=VSIX+Installation" alt="VSIX Installation" width="300"/>
+  </div>
+</div>
 
-### Option 1: Use your own images
+### Method 2: Run in Development Mode (For developers)
 
-1. Copy some images into the `test-image` directory
-2. Right-click on an image
-3. Select "View Image Metadata" to see what metadata exists
-4. Select "Clean Image Metadata" to clean the metadata
-5. Use "View Image Metadata" again to verify the cleaning worked
+<div style="display: flex; align-items: top;">
+  <div style="flex: 2;">
+    <ol>
+      <li>Open the project in VS Code:
+        <pre><code>code --new-window .</code></pre>
+      </li>
+      <li>Press <code>F5</code> or go to <strong>Run > Start Debugging</strong></li>
+      <li>This launches an "Extension Development Host" window</li>
+      <li>Test your extension in this development window</li>
+      <li>Changes to code require restarting the debugging session</li>
+    </ol>
+  </div>
+  <div style="flex: 1;">
+    <img src="https://via.placeholder.com/300x200?text=Development+Mode" alt="Development Mode" width="300"/>
+  </div>
+</div>
 
-### Option 2: Add test metadata to images
+---
 
-For testing purposes, we've provided a script to add artificial metadata to any image:
+## 🖼️ Testing with Sample Images
 
-1. Install the necessary dependencies:
-   ```bash
-   npm install
-   ```
+### Option 1: Use Your Own Images
 
-2. Run the script with an image path:
-   ```bash
-   node test-image/add-test-metadata.js test-image/your-image.jpg
-   ```
+<div style="display: flex; align-items: center;">
+  <div style="flex: 2;">
+    <ol>
+      <li>Copy images into the <code>test-image</code> directory</li>
+      <li>Right-click on an image and select <strong>"View Image Metadata"</strong></li>
+      <li>Check what metadata exists in the image</li>
+      <li>Right-click again and select <strong>"Clean Image Metadata"</strong></li>
+      <li>View metadata again to verify cleaning was successful</li>
+    </ol>
+  </div>
+  <div style="flex: 1;">
+    <img src="https://via.placeholder.com/300x200?text=Test+With+Own+Images" alt="Testing with Own Images" width="300"/>
+  </div>
+</div>
 
-3. The script will add GPS coordinates, camera info, copyright details, and other metadata
+### Option 2: Create Test Images with Metadata
 
-4. Test the extension with this modified image by right-clicking and using the context menu options
+We've included a script that adds artificial test metadata to any image, perfect for testing the cleaning functionality:
 
-## What to Test
+```bash
+# First install dependencies
+npm install
 
-When testing the extension, verify that:
+# Then run the script on any image
+node test-image/add-test-metadata.js test-image/your-image.jpg
+```
 
-1. **Viewing Metadata**:
-   - The "View Image Metadata" command works from the context menu
-   - Metadata is displayed in a JSON format
-   - The display is readable and properly formatted
+The script adds:
+- GPS coordinates
+- Camera information
+- Creation timestamps
+- Copyright details
+- Author information
 
-2. **Cleaning Metadata**:
-   - The "Clean Image Metadata" command works from the context menu
-   - A progress notification appears during the cleaning process
-   - After cleaning, viewing the metadata again shows that sensitive fields have been removed
-   - The image still opens properly and looks the same visually
+<div align="center">
+  <img src="https://via.placeholder.com/600x250?text=Before+and+After+Metadata+Cleaning" alt="Before and After Metadata Cleaning" width="600"/>
+</div>
 
-3. **Error Handling**:
-   - The extension properly handles non-image files
-   - The extension handles read-only files gracefully
-   - Error messages are clear and helpful
+---
 
-## Reporting Issues
+## ✅ Feature Testing Checklist
 
-If you find any issues during testing, please report them by:
+Use this checklist to verify all extension features are working properly:
 
-1. Opening an issue on the GitHub repository
-2. Including steps to reproduce the issue
-3. Describing the expected vs. actual behavior
-4. Including any error messages or logs
+| Feature | Test Steps | Expected Result | Status |
+|---------|------------|-----------------|--------|
+| **View Metadata** | Right-click image → "View Image Metadata" | JSON metadata displayed in new document | ⬜ |
+| **Clean Metadata** | Right-click image → "Clean Image Metadata" | Progress notification → Success message | ⬜ |
+| **Verify Cleaning** | View metadata after cleaning | Most/all metadata fields removed | ⬜ |
+| **Image Integrity** | Open image after cleaning | Image appears identical to original | ⬜ |
+| **Error: Non-Image** | Right-click non-image file → try commands | Proper error message shown | ⬜ |
+| **Error: Read-Only** | Test with read-only image | Graceful error handling | ⬜ |
+| **Large Images** | Test with high-resolution image | Successfully processes without timeout | ⬜ |
 
-## Advanced Testing
+---
 
-For more advanced testing scenarios:
+## 🔧 Troubleshooting
 
-1. Test with very large image files
-2. Test with images that have unusual metadata
-3. Test with different image formats (JPG, PNG, GIF, TIFF, WebP) 
+If you encounter issues during testing:
+
+1. **Command not appearing in context menu**
+   - Ensure the extension is properly installed
+   - Verify you're right-clicking on a supported image format
+   - Try reloading the VS Code window
+
+2. **Metadata not fully removed**
+   - Some specialized file formats may retain certain metadata
+   - Check if the file is locked by another application
+   - Try saving the image to a new location first
+
+3. **Performance issues with large files**
+   - Processing very large images may take longer
+   - Ensure your system has sufficient resources available
+
+---
+
+## 🔬 Advanced Testing
+
+For more thorough testing, try these advanced scenarios:
+
+- Test with multiple image formats (JPG, PNG, GIF, TIFF, WebP)
+- Test with unusually large image files (20MB+)
+- Test with images containing extensive metadata
+- Test the extension while other resource-intensive operations are running
+- Test with images in read-only locations or with restricted permissions
+
+---
+
+## 📝 Reporting Issues
+
+If you encounter bugs or have feature suggestions:
+
+1. Check existing [issues on GitHub](https://github.com/natalie-a-1/Meta-Scraper/issues) to see if it's already reported
+2. Create a new issue with:
+   - A clear descriptive title
+   - Detailed steps to reproduce
+   - Expected vs. actual behavior
+   - VS Code version and OS information
+   - Screenshots or logs if available
+
+---
+
+<div align="center">
+  <p>Thank you for helping test Meta-Scraper!</p>
+  <p>
+    <a href="https://github.com/natalie-a-1/Meta-Scraper">Back to Main Repository</a> •
+    <a href="README.md">View README</a> •
+    <a href="PUBLISHING.md">Publishing Guide</a>
+  </p>
+</div> 
