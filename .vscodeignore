@@ -3,8 +3,17 @@
 test/**
 .gitignore
 .yarnrc
-vsc-extension-quickstart.md
 **/jsconfig.json
 **/*.map
 **/eslint.config.mjs
 **/.vscode-test.*
+
+# Development & documentation files not needed in the package
+PUBLISHING.md
+TESTING.md
+test-image/**
+.git/**
+CHANGELOG.md
+
+# Additional build artifacts to exclude
+**/*.vsix
