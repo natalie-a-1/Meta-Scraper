@@ -10,10 +10,8 @@ A powerful Visual Studio Code extension that protects your privacy by viewing an
 
 ## 🎬 Demo Video
 
-<div align="center">
   <video src="images/output.mp4" width="600" controls></video>
   <p><i>Note: We apologize for the poor video quality. We're working on creating a better demonstration.</i></p>
-</div>
 
 ---
 
