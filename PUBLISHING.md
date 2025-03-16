@@ -208,4 +208,8 @@ jobs:
     <a href="README.md">View README</a> •
     <a href="TESTING.md">Testing Guide</a>
   </p>
+</div>
+
+<div align="center">
+  <video src="./images/output.mp4" width="600" controls></video>
 </div> 

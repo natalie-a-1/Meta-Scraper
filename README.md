@@ -10,12 +10,9 @@ A powerful Visual Studio Code extension that protects your privacy by viewing an
 
 ## 🎬 Demo Video
 
-
-<!-- VS Code Marketplace-compatible version (may show as embed) -->
-<div style="padding:65.03% 0 0 0;position:relative;">
-  <iframe src="https://player.vimeo.com/video/1066392522?h=7f45f96e0f&amp;badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479" frameborder="0" allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media" style="position:absolute;top:0;left:0;width:100%;height:100%;" title="example"></iframe>
+<div align="center">
+  <video src="./images/output.mp4" width="600" controls></video>
 </div>
-<script src="https://player.vimeo.com/api/player.js"></script>
 
 ---
 

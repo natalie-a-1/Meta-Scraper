@@ -93,6 +93,7 @@ The script adds:
 - Author information
 
 <div align="center">
+  <video src="./images/output.mp4" width="600" controls></video>
 </div>
 
 ---
