@@ -4,13 +4,37 @@
   "description": "Remove metadata from your images",
   "version": "0.0.1",
   "publisher": "natalie-a-1",
+  "publisherUrl": "https://github.com/natalie-a-1/",
   "icon": "./images/icon.png",
   "engines": {
     "vscode": "^1.98.0"
   },
   "categories": [
-    "Other"
+    "Other",
+    "Formatters",
+    "Visualization",
+    "Utility"
   ],
+  "keywords": [
+    "metadata",
+    "image",
+    "exif",
+    "privacy",
+    "security",
+    "cleanup",
+    "images"
+  ],
+  "resources": {
+    "github": {
+      "account": "https://github.com/natalie-a-1",
+      "repository": "https://github.com/natalie-a-1/Meta-Scraper"
+    },
+    "documentation": {
+      "usage": "https://github.com/natalie-a-1/Meta-Scraper/blob/main/README.md",
+      "testing": "https://github.com/natalie-a-1/Meta-Scraper/blob/main/TESTING.md",
+      "publishing": "https://github.com/natalie-a-1/Meta-Scraper/blob/main/PUBLISHING.md"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/natalie-a-1/Meta-Scraper.git"
