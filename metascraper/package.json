@@ -1,0 +1,61 @@
+{
+  "name": "metascraper",
+  "displayName": "metascraper",
+  "description": "Remove metadata from your images",
+  "version": "0.0.1",
+  "icon": "./images/icon.png",
+  "engines": {
+    "vscode": "^1.98.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/metascraper.git"
+  },
+  "activationEvents": [],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "metascraper.cleanMetadata",
+        "title": "Clean Image Metadata"
+      },
+      {
+        "command": "metascraper.viewMetadata",
+        "title": "View Image Metadata"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "metascraper.cleanMetadata",
+          "when": "resourceExtname =~ /\\.(jpg|jpeg|png|gif|tiff|webp)$/i",
+          "group": "metascraper"
+        },
+        {
+          "command": "metascraper.viewMetadata",
+          "when": "resourceExtname =~ /\\.(jpg|jpeg|png|gif|tiff|webp)$/i",
+          "group": "metascraper"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.98.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "eslint": "^9.21.0"
+  },
+  "dependencies": {
+    "exiftool-vendored": "^29.2.0"
+  }
+}
