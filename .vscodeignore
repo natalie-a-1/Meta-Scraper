@@ -17,3 +17,5 @@ CHANGELOG.md
 
 # Additional build artifacts to exclude
 **/*.vsix
+
+images/output.gif

@@ -3,7 +3,7 @@
   "displayName": "metascraper",
   "description": "Remove metadata from your images",
   "version": "0.0.1",
-  "publisher": "natalie-a-1",
+  "publisher": "NatalieHill",
   "publisherUrl": "https://github.com/natalie-a-1/",
   "icon": "./images/icon.png",
   "engines": {
@@ -12,8 +12,7 @@
   "categories": [
     "Other",
     "Formatters",
-    "Visualization",
-    "Utility"
+    "Visualization"
   ],
   "keywords": [
     "metadata",
