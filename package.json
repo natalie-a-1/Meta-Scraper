@@ -2,7 +2,7 @@
   "name": "metascraper",
   "displayName": "metascraper",
   "description": "Remove metadata from your images",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "NatalieHill",
   "publisherUrl": "https://github.com/natalie-a-1/",
   "icon": "./images/icon.png",
