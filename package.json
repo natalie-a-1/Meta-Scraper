@@ -1,85 +1,41 @@
 {
-  "name": "metascraper",
-  "displayName": "metascraper",
-  "description": "Remove metadata from your images",
-  "version": "0.0.2",
-  "publisher": "NatalieHill",
-  "publisherUrl": "https://github.com/natalie-a-1/",
-  "icon": "./images/icon.png",
+  "name": "lucci-pay",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Payment requests and native checkout for ChatGPT",
+  "license": "MIT",
   "engines": {
-    "vscode": "^1.98.0"
-  },
-  "categories": [
-    "Other",
-    "Formatters",
-    "Visualization"
-  ],
-  "keywords": [
-    "metadata",
-    "image",
-    "exif",
-    "privacy",
-    "security",
-    "cleanup",
-    "images"
-  ],
-  "resources": {
-    "github": {
-      "account": "https://github.com/natalie-a-1",
-      "repository": "https://github.com/natalie-a-1/Meta-Scraper"
-    },
-    "documentation": {
-      "usage": "https://github.com/natalie-a-1/Meta-Scraper/blob/main/README.md",
-      "testing": "https://github.com/natalie-a-1/Meta-Scraper/blob/main/TESTING.md",
-      "publishing": "https://github.com/natalie-a-1/Meta-Scraper/blob/main/PUBLISHING.md"
-    }
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/natalie-a-1/Meta-Scraper.git"
-  },
-  "activationEvents": [],
-  "main": "./extension.js",
-  "contributes": {
-    "commands": [
-      {
-        "command": "metascraper.cleanMetadata",
-        "title": "Clean Image Metadata"
-      },
-      {
-        "command": "metascraper.viewMetadata",
-        "title": "View Image Metadata"
-      }
-    ],
-    "menus": {
-      "explorer/context": [
-        {
-          "command": "metascraper.cleanMetadata",
-          "when": "resourceExtname =~ /\\.(jpg|jpeg|png|gif|tiff|webp)$/i",
-          "group": "metascraper"
-        },
-        {
-          "command": "metascraper.viewMetadata",
-          "when": "resourceExtname =~ /\\.(jpg|jpeg|png|gif|tiff|webp)$/i",
-          "group": "metascraper"
-        }
-      ]
-    }
+    "node": ">=24.0.0"
   },
   "scripts": {
-    "lint": "eslint .",
-    "pretest": "npm run lint",
-    "test": "vscode-test"
-  },
-  "devDependencies": {
-    "@types/mocha": "^10.0.10",
-    "@types/node": "20.x",
-    "@types/vscode": "^1.98.0",
-    "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.4.1",
-    "eslint": "^9.21.0"
+    "dev": "npm run build:widget && node --import tsx --env-file-if-exists=.env server/index.ts",
+    "build:widget": "node scripts/build-widget.mjs",
+    "build": "npm run typecheck && npm run build:widget && tsc -p tsconfig.server.json",
+    "start": "node --env-file-if-exists=.env dist/server/index.js",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "check": "npm run typecheck && npm test && npm run build",
+    "demo:request": "node --import tsx --env-file-if-exists=.env examples/request-payment.ts"
   },
   "dependencies": {
-    "exiftool-vendored": "^29.2.0"
+    "@modelcontextprotocol/ext-apps": "1.7.5",
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.2.1",
+    "jose": "^6.1.3",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "esbuild": "^0.27.0",
+    "prettier": "3.9.6",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   }
 }

@@ -1,0 +1,15 @@
+[
+  {
+    "id": "your-merchant",
+    "name": "Your merchant name",
+    "domain": "your-merchant.example",
+    "api_key_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "provider_merchant_id": "profile_replace_with_psp_assigned_value",
+    "stripe_account": "acct_replace",
+    "category": "physical_goods",
+    "terms_url": "https://your-merchant.example/terms",
+    "privacy_url": "https://your-merchant.example/privacy",
+    "refund_url": "https://your-merchant.example/refunds",
+    "support_url": "https://your-merchant.example/support"
+  }
+]
