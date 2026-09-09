@@ -1,0 +1,32 @@
+{
+  "name": "@meta-scraper/mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Photo metadata inspection and removal for ChatGPT, Claude, and MCP clients",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "start": "node src/main.mjs",
+    "start:stdio": "node src/main.mjs --stdio",
+    "check": "eslint src web scripts test && npm run build && node --test test/*.test.mjs",
+    "test": "node --test test/*.test.mjs",
+    "dev:host": "node scripts/dev-host.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/ext-apps": "1.7.5",
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "exiftool-vendored": "38.0.0",
+    "express": "5.2.1",
+    "zod": "4.3.6"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "esbuild": "^0.25.0",
+    "eslint": "^10.10.0",
+    "globals": "^16.5.0",
+    "sharp": "^0.35.4"
+  }
+}

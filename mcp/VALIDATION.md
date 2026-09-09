@@ -1,0 +1,46 @@
+# Validation
+
+## Automated checks
+
+Run `npm ci && npm run check` from `mcp/` with Node 22.13+. The check builds the actual panel and runs 19 tests using vendored ExifTool, Sharp as an independent test decoder, and the official MCP SDK/Apps bridge.
+
+- JPEG, PNG, WebP, GIF, and TIFF: inspect embedded fields, selectively remove a field while retaining unselected values, remove all metadata, reread outputs, compare decoded pixels, and confirm original bytes are unchanged.
+- Animated GIF/WebP and multipage TIFF: retain page/frame count, timing/loop values, and pixels from every frame/page.
+- JPEG/GIF comments: display and independently remove embedded comments. TIFF full removal also checks fields that ExifTool's basic `-all=` leaves in IFD0.
+- Invalid files/base64, empty or forged selection, structural field selection, and argument injection: reject without changing the original.
+- Failed removal verification: do not create a download. Expiry/deletion invalidate IDs; copies have independent IDs; capacity applies to uploads and outputs; orientation removal produces a display warning.
+- HTTP and stdio: initialize, discover schemas/annotations, upload, inspect, clean, and download actual images. Stdio starts outside the repository and uses its local companion URL.
+- MCP Apps: initialize the bridge, receive tool input/result notifications, call upload/clean tools from the UI side, update model context, and request a host-mediated download.
+- HTTP request boundaries, private/missing photo IDs, attachment host allowlisting, and private/reserved address blocking.
+
+Local result: all 19 checks passed on macOS with Node 22.23.2. `npm audit` reported no vulnerabilities in the MCP package. The workflow skill passed `quick_validate.py`. CI runs the checks on Linux and macOS and builds the Docker image.
+
+## Browser verification
+
+After building, run `npm run dev:host` and open `http://127.0.0.1:3101/host`. This development-only page uses the official `AppBridge`, a sandboxed iframe with only `allow-scripts`, and a CSP that disallows network/image loads inside the widget. It exercises the real HTTP MCP server. The production entry point does not expose this route.
+
+Chromium verification completed for the standalone panel and sandboxed host:
+
+- Select/upload a synthetic original JPEG; show its nine embedded fields.
+- Treat an XMP value containing `<script>` as inert visible text.
+- Select Artist; create a copy with that field absent and the other eight present.
+- Remove all remaining metadata; show verified zero remaining fields.
+- Download the resulting file through the browser and through the host's open-link handler.
+- Receive the host's dark-theme update; review layout at desktop and 390-pixel widths.
+- Keep checkbox focus during selection and update model context after an upload.
+
+No widget JavaScript errors occurred. The development host's browser SDK probes `GET /mcp`, which correctly returns 405 for the stateless POST-only transport; a missing favicon also produces a harmless browser request error. Neither affects the widget or tool calls.
+
+## Host acceptance after connecting
+
+These are deployment/account checks, not claims that this PR has installed a live app:
+
+| Host | Check |
+| --- | --- |
+| ChatGPT | Refresh tool discovery, open the panel, upload an original file, remove selected/all fields, and download. Also pass a real host attachment to `import_photo` to exercise its expiring download URL. |
+| Claude remote | Connect the HTTPS `/mcp` URL, open the panel, select the original file in the widget, inspect, clean, and download. |
+| Claude Desktop | Configure stdio using absolute Node/server paths, restart, and run the same workflow through the widget or returned browser link. |
+
+Authenticated ChatGPT/Claude account sessions and a live host-issued attachment URL were not exercised locally. Their portable protocol paths and ChatGPT file descriptor schema were verified against the current official documentation and SDK. No production endpoint or public directory listing is created by the PR. Local Docker execution was unavailable because the Docker daemon was not running; the PR's container job supplies build validation.
+
+The original VS Code extension was not changed or retested. Its pre-existing root dependency edits are outside this PR.

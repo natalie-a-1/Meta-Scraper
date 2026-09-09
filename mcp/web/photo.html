@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Meta-Scraper · Photo metadata</title>
+    <style>
+      /*__STYLE__*/
+    </style>
+  </head>
+  <body>
+    <main id="panel" aria-busy="true">
+      <header>
+        <div>
+          <p class="eyebrow">META-SCRAPER</p>
+          <h1>Your photo. Your information.</h1>
+        </div>
+        <span class="mark" aria-hidden="true">↗</span>
+      </header>
+      <p class="intro">See what’s inside your photo. Choose what stays.</p>
+      <div id="status" role="status" aria-live="polite">Connecting…</div>
+      <div id="error" role="alert" hidden></div>
+      <section id="upload-section">
+        <label class="upload-area" for="photo-file">
+          <span class="upload-icon" aria-hidden="true">＋</span>
+          <strong>Choose a photo</strong>
+          <span>JPEG, PNG, WebP, GIF or TIFF · Up to 20 MB</span>
+          <input
+            id="photo-file"
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif,image/tiff,.tif,.tiff"
+            disabled
+          />
+        </label>
+        <p class="hint">
+          Use the original file. Images shared through chat or social apps may
+          already have metadata removed.
+        </p>
+      </section>
+      <section id="photo-section" hidden aria-label="Photo metadata">
+        <div class="file-heading">
+          <div>
+            <h2 id="file-name"></h2>
+            <p id="file-summary" class="hint"></p>
+          </div>
+          <button id="another" class="quiet" type="button">Change photo</button>
+        </div>
+        <div id="clean-result" class="success" hidden></div>
+        <div id="warnings" class="warning" hidden></div>
+        <div class="metadata-heading">
+          <h3>
+            Embedded metadata <span id="field-count" class="count"></span>
+          </h3>
+          <button id="original" class="quiet" type="button" hidden>
+            View original
+          </button>
+        </div>
+        <div id="field-controls">
+          <label class="search-label" for="search">Find a field</label
+          ><input
+            id="search"
+            type="search"
+            placeholder="Search location, camera, author…"
+          /><label class="select-all"
+            ><input id="select-all" type="checkbox" /> Select visible
+            fields</label
+          >
+        </div>
+        <div id="fields" class="fields"></div>
+        <p id="empty-fields" class="hint" hidden>
+          No removable metadata found. Required image properties are listed
+          below.
+        </p>
+        <div class="actions">
+          <button id="remove-all" class="primary" type="button">
+            Remove all metadata</button
+          ><button id="remove-selected" type="button" disabled>
+            Remove selected
+          </button>
+        </div>
+        <p id="removal-note" class="hint">
+          Creates a separate copy. Removing orientation or color profiles can
+          change how some viewers display it.
+        </p>
+        <div class="download-row">
+          <button id="download" class="primary" type="button" hidden>
+            Download cleaned photo</button
+          ><button id="delete" class="quiet" type="button">
+            Delete this stored photo
+          </button>
+        </div>
+        <details>
+          <summary>Required image properties</summary>
+          <p class="hint">
+            Dimensions, pixel layout and format information keep your photo
+            readable. They are not personal metadata.
+          </p>
+          <dl id="properties"></dl>
+        </details>
+      </section>
+      <footer>
+        Photos are processed on this server and expire after 30 minutes. Your
+        original file stays unchanged.
+      </footer>
+    </main>
+    <script type="module">
+      /*__SCRIPT__*/
+    </script>
+  </body>
+</html>
