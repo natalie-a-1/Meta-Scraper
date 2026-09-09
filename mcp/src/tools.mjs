@@ -3,7 +3,7 @@ import { decodePhoto, MAX_BYTES } from "./store.mjs";
 import { downloadAttachment } from "./download.mjs";
 import { publicError } from "./errors.mjs";
 
-export const UI_URI = "ui://meta-scraper/photo-v1.html";
+export const UI_URI = "ui://meta-scraper/photo-v2.html";
 const photoId = z
   .string()
   .regex(/^[a-f0-9]{64}$/)
@@ -67,7 +67,7 @@ export function toolDefinitions(store, baseUrl) {
       name: "open_photo",
       title: "Open Meta-Scraper",
       description:
-        "Use this when the user wants to upload a photo, view its metadata, or choose metadata to remove. Opens the photo panel. Pass an existing photoId to revisit a result. In clients without a panel, offer the uploadUrl to the user.",
+        "Use this when the user wants to upload a photo, view its metadata, or choose metadata to remove. Opens the photo panel. After import_photo, view_metadata, or remove_metadata, call this with the returned photoId to render the result inline. Pass an existing photoId to revisit a result. In clients without a panel, offer the uploadUrl to the user.",
       inputSchema: z.object({ photoId: photoId.optional() }),
       outputSchema,
       annotations: readOnly,

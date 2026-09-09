@@ -44,3 +44,7 @@ These are deployment/account checks, not claims that this PR has installed a liv
 Authenticated ChatGPT/Claude account sessions and a live host-issued attachment URL were not exercised locally. Their portable protocol paths and ChatGPT file descriptor schema were verified against the current official documentation and SDK. No production endpoint or public directory listing is created by the PR. Local Docker execution was unavailable because the Docker daemon was not running; the PR's container job supplies build validation.
 
 The original VS Code extension was not changed or retested. Its pre-existing root dependency edits are outside this PR.
+
+## Inline UI follow-up
+
+The v2 resource uses shared host color/font tokens, a compact inline card, and a feature-detected ChatGPT file-library picker. Conversation tool instructions explicitly finish with `open_photo(photoId)`. Rechecked the real sandbox bridge with upload and verified remove-all in the browser; all 19 automated tests pass. The ChatGPT file-library extension still requires acceptance testing in an authenticated ChatGPT session.

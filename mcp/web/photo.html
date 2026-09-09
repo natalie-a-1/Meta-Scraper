@@ -12,18 +12,17 @@
     <main id="panel" aria-busy="true">
       <header>
         <div>
-          <p class="eyebrow">META-SCRAPER</p>
-          <h1>Your photo. Your information.</h1>
+          <p class="eyebrow">Meta-Scraper</p>
+          <h1>Photo metadata</h1>
         </div>
-        <span class="mark" aria-hidden="true">↗</span>
       </header>
-      <p class="intro">See what’s inside your photo. Choose what stays.</p>
+      <p class="intro">Inspect hidden details and choose what to remove.</p>
       <div id="status" role="status" aria-live="polite">Connecting…</div>
       <div id="error" role="alert" hidden></div>
       <section id="upload-section">
         <label class="upload-area" for="photo-file">
           <span class="upload-icon" aria-hidden="true">＋</span>
-          <strong>Choose a photo</strong>
+          <strong>Upload an original photo</strong>
           <span>JPEG, PNG, WebP, GIF or TIFF · Up to 20 MB</span>
           <input
             id="photo-file"
@@ -32,6 +31,7 @@
             disabled
           />
         </label>
+        <button id="library" type="button" hidden>Choose from ChatGPT files</button>
         <p class="hint">
           Use the original file. Images shared through chat or social apps may
           already have metadata removed.

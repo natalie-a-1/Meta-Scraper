@@ -21,7 +21,7 @@ import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/
 import { AppBridge, PostMessageTransport } from '@modelcontextprotocol/ext-apps/app-bridge';
 const client = new Client({ name: 'local-verification-host', version: '1.0.0' });
 await client.connect(new StreamableHTTPClientTransport(new URL('/mcp', location.href)));
-const resource = await client.readResource({ uri: 'ui://meta-scraper/photo-v1.html' });
+const resource = await client.readResource({ uri: 'ui://meta-scraper/photo-v2.html' });
 const result = await client.callTool({ name: 'open_photo', arguments: {} });
 const frame = document.querySelector('iframe');
 const bridge = new AppBridge(client, { name: 'local-verification-host', version: '1.0.0' },

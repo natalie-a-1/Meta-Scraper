@@ -12,6 +12,36 @@ let busy = true;
 let connected = !embedded;
 const selected = new Set();
 
+// Optional ChatGPT extensions supplement the portable MCP Apps bridge.
+function updateFileLibrary() {
+  $("library").hidden = !(
+    embedded && window.openai?.selectFiles && window.openai?.getFileDownloadUrl
+  );
+}
+window.addEventListener("openai:set_globals", updateFileLibrary);
+updateFileLibrary();
+$("library").addEventListener("click", () =>
+  action("Choosing a photo…", async () => {
+    const files = await window.openai.selectFiles();
+    if (!files?.length) return;
+    if (files.length > 1) throw new Error("Choose one photo at a time.");
+    const file = files[0];
+    const { downloadUrl } = await window.openai.getFileDownloadUrl({
+      fileId: file.fileId,
+    });
+    const result = await call("import_photo", {
+      file: {
+        file_id: file.fileId,
+        download_url: downloadUrl,
+        file_name: file.fileName,
+        mime_type: file.mimeType,
+      },
+    });
+    render(result);
+    await sharePhotoContext(result);
+  }),
+);
+
 function status(message = "") {
   $("status").textContent = message;
 }
@@ -278,6 +308,7 @@ if (app) {
       busy = false;
       status();
       applyContext(app.getHostContext());
+      updateFileLibrary();
       updateButtons();
     })
     .catch(() => {

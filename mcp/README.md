@@ -15,6 +15,12 @@ Requires Node.js 22.13+ and the OS dependencies used by vendored ExifTool (Perl 
 
 The panel runs at `http://127.0.0.1:3000`; MCP runs at `/mcp`. Set `PORT` to choose another port. Build after changing `web/` files and restart after server changes.
 
+## Preview the inline MCP component
+
+Run `npm run dev:host` after building, then open `http://127.0.0.1:3101/host`. This renders the registered UI resource inside a sandboxed iframe using the official MCP Apps bridge and real server tools. It is a local verification host, not an authenticated ChatGPT session. Do not open `web/photo.html` directly: it is an unbuilt template with asset placeholders.
+
+The card inherits host colors and fonts. In ChatGPT, **Choose from ChatGPT files** appears when the host provides its file-library APIs; other hosts retain the original-file upload control. Conversation-driven imports and edits finish with `open_photo(photoId)` to render their result.
+
 ## Connect ChatGPT
 
 1. Start the server and expose it through a supported private MCP tunnel or public HTTPS origin. OpenAI Secure MCP Tunnel can also connect the local stdio server. For a public development tunnel, set `PUBLIC_BASE_URL` to its HTTPS origin before starting.
