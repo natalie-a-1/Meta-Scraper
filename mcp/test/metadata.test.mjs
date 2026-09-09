@@ -223,3 +223,16 @@ for (const brand of ["heic", "mif1"]) {
     assert.equal((await store.clean(cleaned.photoId, "all")).fields.length, 0);
   });
 }
+
+test("base64 uploads handle full-size photos without regex stack overflow", () => {
+  for (const size of [3_469_788, MAX_BYTES - 1, MAX_BYTES]) {
+    const bytes = Buffer.alloc(size, 173);
+    assert.deepEqual(decodePhoto(bytes.toString("base64")), bytes);
+  }
+  const large = Buffer.alloc(3_469_788, 173).toString("base64");
+  for (const invalid of [
+    large.slice(0, -1) + "!", large.slice(0, -4) + "====",
+    "AA=A", "AB==", "AAA", null, 42,
+    Buffer.alloc(MAX_BYTES + 1).toString("base64"),
+  ]) assert.throws(() => decodePhoto(invalid), /valid photo|smaller than 20 MB/);
+});

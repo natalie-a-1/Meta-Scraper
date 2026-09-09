@@ -52,3 +52,7 @@ The v2 resource uses shared host color/font tokens, a compact inline card, and a
 ## HEIF support
 
 Added synthetic HEIC and generic-brand HEIF regression cases for upload, selective/full cleanup, repeated cleanup, protected structural fields, and original-byte preservation. ExifTool image-data hashes are equal before and after cleanup, and codec/rendering properties are unchanged. The suite now contains 21 tests.
+
+## Large upload regression
+
+Reproduced a stack overflow in the repeated-group base64 validation regex with a 3,469,788-byte JPEG. Replaced it with a bounded canonical decode/encode check. Added synthetic regression coverage at the reported size and the 20 MiB boundary, including malformed padding/characters and oversized input. All 22 tests pass. The reported photo also uploaded through the real browser MCP Apps bridge and completed full cleanup; no user photo or metadata was added to the repository.

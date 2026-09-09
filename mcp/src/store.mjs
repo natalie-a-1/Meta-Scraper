@@ -19,15 +19,18 @@ const token = () => randomBytes(32).toString("hex");
 
 export function decodePhoto(base64) {
   if (
+    typeof base64 !== "string" ||
     !base64 ||
     base64.length > Math.ceil(MAX_BYTES / 3) * 4 ||
-    !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(
-      base64,
-    )
+    base64.length % 4 !== 0
   ) {
     throw new UserError("Upload a valid photo smaller than 20 MB.");
   }
   const bytes = Buffer.from(base64, "base64");
+  // Buffer's decoder is permissive. A canonical round trip rejects invalid
+  // characters/padding without a repeated-group regex that overflows on photos.
+  if (bytes.toString("base64") !== base64)
+    throw new UserError("Upload a valid photo smaller than 20 MB.");
   if (!bytes.length || bytes.length > MAX_BYTES)
     throw new UserError("Choose a photo smaller than 20 MB.");
   return bytes;
