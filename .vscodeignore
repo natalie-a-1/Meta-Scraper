@@ -19,3 +19,9 @@ CHANGELOG.md
 **/*.vsix
 
 images/output.gif
+mcp/**
+docs/**
+.github/**
+.dockerignore
+output/**
+.playwright-cli/**

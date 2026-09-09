@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Photo details</title>
+    <style>
+      /*__STYLE__*/
+    </style>
+  </head>
+  <body>
+    <main id="panel" aria-busy="true">
+      <div id="status" role="status" aria-live="polite">Connecting…</div>
+      <div id="error" role="alert" hidden></div>
+      <section id="upload-section" class="empty">
+        <span class="empty-icon" data-icon="photo" aria-hidden="true"></span>
+        <h1>Choose what your photo shares</h1>
+        <p>Remove hidden details before sharing.</p>
+        <div class="actions">
+          <button id="choose" class="primary" disabled>Add a photo</button
+          ><button id="library" class="glass" hidden>Choose from files</button>
+        </div>
+        <input
+          id="photo-file"
+          class="sr-only"
+          tabindex="-1"
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif,image/tiff,image/heic,image/heif,.tif,.tiff,.heic,.heif,.hif"
+          disabled
+          aria-label="Upload original photo"
+        />
+        <p class="caption formats">HEIC, JPEG, PNG and more · Up to 20 MB</p>
+      </section>
+      <section id="photo-section" hidden aria-label="Photo details">
+        <header class="file-header">
+          <div class="thumbnail">
+            <span data-icon="photo" aria-hidden="true"></span
+            ><img id="preview" alt="Original photo thumbnail" hidden />
+          </div>
+          <div class="file-info">
+            <h1 id="file-name"></h1>
+            <p id="file-summary" class="caption"></p>
+          </div>
+          <details id="photo-menu" class="menu">
+            <summary aria-label="Photo options">
+              <span data-icon="more" aria-hidden="true"></span>
+            </summary>
+            <div class="menu-items glass">
+              <button id="another">Change photo</button
+              ><button id="original" hidden>View original details</button
+              ><button id="delete">Delete stored copy</button>
+            </div>
+          </details>
+        </header>
+        <div class="headline">
+          <span
+            id="result-icon"
+            data-icon="check"
+            hidden
+            aria-hidden="true"
+          ></span>
+          <h2 id="headline"></h2>
+        </div>
+        <p
+          id="description"
+          class="supporting"
+          role="status"
+          aria-live="polite"
+        ></p>
+        <dl id="overview" class="overview"></dl>
+        <div id="warnings" class="notice" hidden></div>
+        <div class="actions">
+          <button id="remove-all" class="primary">Remove hidden details</button
+          ><button id="download" class="primary" hidden>
+            Save cleaned photo</button
+          ><button id="customize" class="glass">Choose what to remove</button>
+        </div>
+        <p id="removal-note" class="caption"></p>
+      </section>
+      <footer>
+        <details id="privacy">
+          <summary>
+            Original unchanged <span aria-hidden="true">·</span> Temporary
+            storage
+          </summary>
+          <p>
+            Your original file is unchanged. Uploaded photos and cleaned copies
+            are processed on this server and deleted after 30 minutes. You can
+            delete a stored copy sooner from Photo options.
+          </p>
+          <p>
+            Cleanup removes embedded details, not information visible in the
+            picture itself.
+          </p>
+        </details>
+      </footer>
+    </main>
+    <dialog id="inspector" aria-labelledby="inspector-title">
+      <div class="sheet-header">
+        <div>
+          <h2 id="inspector-title">Choose what to remove</h2>
+          <p id="inspector-description" class="caption">
+            Checked details will be removed from a new copy.
+          </p>
+        </div>
+        <button
+          id="close-inspector"
+          class="icon-button glass"
+          aria-label="Close details"
+        >
+          <span data-icon="close" aria-hidden="true"></span>
+        </button>
+      </div>
+      <div class="sheet-content">
+        <div id="groups"></div>
+        <details id="technical" class="technical">
+          <summary>Image properties · kept for display</summary>
+          <p class="caption">
+            These help your photo open correctly. They are kept in the cleaned
+            copy.
+          </p>
+          <dl id="properties"></dl>
+        </details>
+      </div>
+      <div id="inspector-actions" class="sheet-footer">
+        <span id="selection-count" class="caption" role="status"></span
+        ><button id="remove-selected" class="primary">Remove selected</button>
+      </div>
+      <p id="inspector-error" role="alert" hidden></p>
+    </dialog>
+    <script type="module">
+      /*__SCRIPT__*/
+    </script>
+  </body>
+</html>
