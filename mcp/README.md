@@ -19,7 +19,9 @@ The panel runs at `http://127.0.0.1:3000`; MCP runs at `/mcp`. Set `PORT` to cho
 
 Run `npm run dev:host` after building, then open `http://127.0.0.1:3101/host`. This renders the registered UI resource inside a sandboxed iframe using the official MCP Apps bridge and real server tools. It is a local verification host, not an authenticated ChatGPT session. Do not open `web/photo.html` directly: it is an unbuilt template with asset placeholders.
 
-The card inherits host colors and fonts. In ChatGPT, **Choose from ChatGPT files** appears when the host provides its file-library APIs; other hosts retain the original-file upload control. Conversation-driven imports and edits finish with `open_photo(photoId)` to render their result.
+The card summarizes location, dates, camera/device information, names/notes, and other details in plain language. One action removes all embedded details; a separate inspector supports category and individual selection. The card inherits host colors and fonts. In ChatGPT, **Choose from ChatGPT files** appears when the host provides its file-library APIs; other hosts retain the original-file upload control. Conversation-driven imports and edits finish with `open_photo(photoId)` to render their result.
+
+See [DESIGN.md](./DESIGN.md) for the OpenAI/Apple design rationale, interaction flow, and accessibility decisions.
 
 ## Connect ChatGPT
 
@@ -105,7 +107,7 @@ Replace the example origin and place the container behind a TLS reverse proxy. P
 
 Use one server instance: records and capabilities are in memory. Restarting invalidates all IDs. Horizontal scaling requires shared storage/ownership and a new retention design. Configure proxy request size (at least 29 MB for base64), timeouts, rate limits, and resource limits appropriate to your deployment. Keep ExifTool patched. Use operational controls for an unattended public service.
 
-The widget has no network/asset dependencies, so MCP Apps CSP allowlists are empty. For public plugin submission with UI, configure a unique `_meta.ui.domain`, stable HTTPS, and the host’s privacy/review requirements. Those deployment-specific settings have no invented domain or credentials in the source.
+The widget has no external network/asset dependencies, so MCP Apps domain allowlists are empty. Original-file uploads can display a local blob thumbnail; no thumbnail request is sent to another service. For public plugin submission with UI, configure a unique `_meta.ui.domain`, stable HTTPS, and the host’s privacy/review requirements. Those deployment-specific settings have no invented domain or credentials in the source.
 
 ## Development and sources
 

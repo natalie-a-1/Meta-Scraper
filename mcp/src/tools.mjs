@@ -3,7 +3,7 @@ import { decodePhoto, MAX_BYTES } from "./store.mjs";
 import { downloadAttachment } from "./download.mjs";
 import { publicError } from "./errors.mjs";
 
-export const UI_URI = "ui://meta-scraper/photo-v2.html";
+export const UI_URI = "ui://meta-scraper/photo-v3.html";
 const photoId = z
   .string()
   .regex(/^[a-f0-9]{64}$/)

@@ -24,7 +24,7 @@ export function createHttpApp({ store, html, getBaseUrl }) {
   app.get("/", (_req, res) => {
     res.set(
       "Content-Security-Policy",
-      "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; img-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
+      "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; img-src blob:; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
     );
     res.type("html").send(html);
   });

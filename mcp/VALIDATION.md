@@ -17,7 +17,7 @@ Local result: all 19 checks passed on macOS with Node 22.23.2. `npm audit` repor
 
 ## Browser verification
 
-After building, run `npm run dev:host` and open `http://127.0.0.1:3101/host`. This development-only page uses the official `AppBridge`, a sandboxed iframe with only `allow-scripts`, and a CSP that disallows network/image loads inside the widget. It exercises the real HTTP MCP server. The production entry point does not expose this route.
+After building, run `npm run dev:host` and open `http://127.0.0.1:3101/host`. This development-only page uses the official `AppBridge`, a sandboxed iframe with only `allow-scripts`, and a CSP that disallows network loads inside the widget and permits local blob thumbnails. It exercises the real HTTP MCP server. The production entry point does not expose this route.
 
 Chromium verification completed for the standalone panel and sandboxed host:
 
@@ -56,3 +56,7 @@ Added synthetic HEIC and generic-brand HEIF regression cases for upload, selecti
 ## Large upload regression
 
 Reproduced a stack overflow in the repeated-group base64 validation regex with a 3,469,788-byte JPEG. Replaced it with a bounded canonical decode/encode check. Added synthetic regression coverage at the reported size and the 20 MiB boundary, including malformed padding/characters and oversized input. All 22 tests pass. The reported photo also uploaded through the real browser MCP Apps bridge and completed full cleanup; no user photo or metadata was added to the repository.
+
+## Conversation-first redesign
+
+The v3 component replaces the inline technical list with plain-language categories and one primary action. Exact fields are available in a separate, keyboard-contained inspector; the host can expand it to fullscreen. Tested category-level GPS removal while retaining names/notes, Escape dismissal, full cleanup, local thumbnail loading, a 390px dark layout, and the simpler upload prompt. A new presentation regression test confirms exact field coverage and avoids inventing absent location information. All 23 tests pass. See [DESIGN.md](./DESIGN.md) for the design rationale and remaining host acceptance work.
