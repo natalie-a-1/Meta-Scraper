@@ -64,6 +64,8 @@ The process serves a loopback panel/download endpoint on a dynamically allocated
 
 Loopback download links are reachable only on the server's machine. When a private tunnel points to a different machine, configure a reachable HTTPS `PUBLIC_BASE_URL` for browser uploads/downloads as well as the MCP connection.
 
+Supported still-image uploads include JPEG, PNG, WebP, GIF, TIFF, HEIC, and HEIF (`.heic`, `.heif`, `.hif`). HEIF stays in its original container without conversion to JPEG. Required codec, item-layout, and rendering properties remain; descriptive EXIF/XMP/GPS metadata can be selected or removed in full.
+
 ## Tools
 
 | Tool | Input | Result |

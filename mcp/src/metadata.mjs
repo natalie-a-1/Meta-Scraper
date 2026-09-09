@@ -7,7 +7,21 @@ export const FORMATS = {
   WEBP: { extension: "webp", mime: "image/webp" },
   GIF: { extension: "gif", mime: "image/gif" },
   TIFF: { extension: "tiff", mime: "image/tiff" },
+  HEIC: { extension: "heic", mime: "image/heic" },
+  HEIF: { extension: "heif", mime: "image/heif" },
 };
+
+// HEIF container/codec properties are needed to locate and decode image items.
+// Use an explicit list: QuickTime also contains removable dates/location tags.
+const heifStructuralNames = new Set(`MajorBrand MinorVersion CompatibleBrands
+  HandlerType ImageSpatialExtent ImagePixelDepth Rotation Mirror
+  ColorProfiles ColorPrimaries TransferCharacteristics MatrixCoefficients
+  VideoFullRangeFlag MaxContentLightLevel MaxPicAverageLightLevel
+  HEVCConfigurationVersion GeneralProfileSpace GeneralTierFlag GeneralProfileIDC
+  GenProfileCompatibilityFlags ConstraintIndicatorFlags GeneralLevelIDC
+  MinSpatialSegmentationIDC ParallelismType ChromaFormat BitDepthLuma BitDepthChroma
+  AverageFrameRate ConstantFrameRate NumTemporalLayers TemporalIDNested
+  MediaDataSize MediaDataOffset`.split(/\s+/));
 
 // These describe the encoded image, rather than optional descriptive metadata.
 // In particular, TIFF needs its IFD pixel layout to remain a readable image.
@@ -32,6 +46,9 @@ function technical(group, name, format) {
   return (
     (group === "File" && name !== "Comment") ||
     group === "JFIF" ||
+    (["HEIC", "HEIF"].includes(format) &&
+      ((group === "QuickTime" && heifStructuralNames.has(name)) ||
+        (group === "Meta" && name === "PrimaryItemReference"))) ||
     (format === "TIFF" &&
       /^IFD\d+$/.test(group) &&
       ["PreviewImageStart", "PreviewImageLength", "PreviewImage"].includes(
@@ -65,7 +82,7 @@ export class MetadataEngine {
         : raw["File:FileType"]?.toUpperCase();
     if (!FORMATS[type])
       throw new UserError(
-        "Choose an original JPEG, PNG, WebP, GIF, or TIFF photo. This file is not a supported image.",
+        "Choose an original JPEG, PNG, WebP, GIF, TIFF, HEIC, or HEIF photo. This file is not a supported image.",
       );
     if (
       raw["ExifTool:Error"] ||

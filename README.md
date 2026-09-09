@@ -3,7 +3,7 @@
 Inspect and remove photo metadata in **ChatGPT, Claude, or another MCP client**. Upload an original photo, see its embedded fields, then remove selected fields or all removable metadata and download a separate copy.
 
 - A compact panel with searchable metadata, field selection, and a download button.
-- JPEG, PNG, WebP, GIF, and TIFF support, including animated GIF/WebP and multipage TIFF.
+- JPEG, PNG, WebP, GIF, TIFF, and HEIF/HEIC support, including animated GIF/WebP and multipage TIFF.
 - Removal verified by rereading the output. Original files and encoded pixels are preserved.
 - Streamable HTTP and stdio MCP transports, ChatGPT attachment import, and a portable file picker with a standalone browser fallback.
 - Temporary storage with private photo IDs, expiring downloads, and explicit deletion.

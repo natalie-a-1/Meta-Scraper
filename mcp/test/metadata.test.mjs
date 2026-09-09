@@ -185,3 +185,41 @@ test("embedded JPEG/GIF comments are visible and can be removed individually", a
     );
   }
 });
+
+for (const brand of ["heic", "mif1"]) {
+  test(`HEIF ${brand}: selected/full removal preserves encoded image data and original`, async (t) => {
+    const store = await new PhotoStore().init();
+    t.after(() => store.close());
+    const bytes = await readFile(new URL("./data/synthetic.heic", import.meta.url));
+    // Both brands describe this same HEVC still-image payload in an HEIF container.
+    bytes.write(brand, 8, "ascii");
+    const photo = await store.upload(bytes, brand === "heic" ? "photo.heic" : "photo.heif");
+    assert.ok(["HEIC", "HEIF"].includes(photo.format));
+    assert.match(photo.mimeType, /^image\/hei[cf]$/);
+    assert.ok(photo.fields.some(({ group }) => group === "GPS"));
+    assert.ok(photo.properties.some(({ name }) => name === "HEVCConfigurationVersion"));
+    await assert.rejects(store.clean(photo.photoId, ["QuickTime:ImageSpatialExtent"]), /Required image properties/);
+    const hash = async (id) => {
+      const result = await store.engine.exiftool.readRaw(store.get(id).path, {
+        readArgs: ["-ImageDataMD5"],
+      });
+      assert.match(result.ImageDataHash, /^[a-f0-9]{32}$/);
+      return result.ImageDataHash;
+    };
+    const beforeHash = await hash(photo.photoId);
+    const partial = await store.clean(photo.photoId, ["XMP-dc:Title"]);
+    assert.ok(!partial.fields.some(({ id }) => id === "XMP-dc:Title"));
+    assert.ok(partial.fields.some(({ group }) => group === "GPS"));
+    assert.equal(await hash(partial.photoId), beforeHash);
+    const cleaned = await store.clean(photo.photoId, "all");
+    assert.equal(cleaned.fields.length, 0);
+    assert.equal(cleaned.cleaning.verified, true);
+    assert.equal(await hash(cleaned.photoId), beforeHash);
+    assert.deepEqual((await store.read(photo.photoId)).bytes, bytes);
+    for (const { id, value } of photo.properties.filter(({ name }) =>
+      !["MediaDataSize", "MediaDataOffset"].includes(name))) {
+      assert.equal(cleaned.properties.find((field) => field.id === id)?.value, value);
+    }
+    assert.equal((await store.clean(cleaned.photoId, "all")).fields.length, 0);
+  });
+}

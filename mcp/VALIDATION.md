@@ -48,3 +48,7 @@ The original VS Code extension was not changed or retested. Its pre-existing roo
 ## Inline UI follow-up
 
 The v2 resource uses shared host color/font tokens, a compact inline card, and a feature-detected ChatGPT file-library picker. Conversation tool instructions explicitly finish with `open_photo(photoId)`. Rechecked the real sandbox bridge with upload and verified remove-all in the browser; all 19 automated tests pass. The ChatGPT file-library extension still requires acceptance testing in an authenticated ChatGPT session.
+
+## HEIF support
+
+Added synthetic HEIC and generic-brand HEIF regression cases for upload, selective/full cleanup, repeated cleanup, protected structural fields, and original-byte preservation. ExifTool image-data hashes are equal before and after cleanup, and codec/rendering properties are unchanged. The suite now contains 21 tests.
