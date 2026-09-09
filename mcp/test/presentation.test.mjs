@@ -4,6 +4,7 @@ import {
   groupedFields,
   summaryRows,
   categoryOf,
+  photoInsight,
 } from "../web/presentation.mjs";
 
 test("plain-language groups cover every exact field once, including GPS across formats", () => {
@@ -34,10 +35,7 @@ test("plain-language groups cover every exact field once, including GPS across f
   assert.equal(categoryOf(fields[5]), "other");
   const rows = summaryRows(fields);
   assert.equal(rows.find(({ id }) => id === "device").value, "Test camera");
-  assert.equal(
-    rows.find(({ id }) => id === "location").value,
-    "Saved in this photo",
-  );
+  assert.equal(rows.find(({ id }) => id === "location").value, "Private");
   assert.equal(
     summaryRows(
       fields.filter(
@@ -47,4 +45,37 @@ test("plain-language groups cover every exact field once, including GPS across f
     false,
   );
   assert.deepEqual(summaryRows([]), []);
+});
+
+test("photo insights reveal only recorded facts and handle invalid dates", () => {
+  const field = (name, value, group = "ExifIFD") => ({
+    id: `${group}:${name}`,
+    name,
+    value,
+    group,
+  });
+  const capture = [field("DateTimeOriginal", "2024:02:29 23:59:10")];
+  assert.match(summaryRows(capture)[0].value, /Feb 29, 2024/);
+  assert.match(photoInsight(capture), /shutter/);
+  assert.equal(
+    summaryRows([field("DateTimeOriginal", "2024:02:31 12:00:00")])[0].value,
+    "Dates or times included",
+  );
+  assert.doesNotMatch(
+    photoInsight([field("GPSLatitude", "40", "GPS")]),
+    /coordinates/,
+  );
+  assert.match(
+    photoInsight([
+      field("GPSLatitude", "40", "GPS"),
+      field("GPSLongitude", "-89", "GPS"),
+    ]),
+    /coordinates/,
+  );
+  assert.equal(
+    summaryRows([field("Software", "Photo Editor")])[0].value,
+    "Photo Editor",
+  );
+  assert.equal(summaryRows([field("Artist", "Alex")])[0].value, "Alex");
+  assert.doesNotMatch(photoInsight([]), /location|device|name|shutter/);
 });

@@ -25,3 +25,9 @@ Change-photo, view-original, and delete-copy controls live in Photo options. Sto
 The design includes native checkboxes and dialog focus containment, keyboard focus indicators, system themes, text wrapping, reduced-motion and reduced-transparency treatments, and a solid high-contrast fallback. Inspectors scroll on their own detail surface; the inline card fits its contents. Category selections survive opening/closing the inspector and can persist through ChatGPT widget state without storing photo bytes.
 
 Browser checks cover the real local MCP bridge, category selection, cleanup, and a 390px dark layout. Authenticated ChatGPT file selection, actual host fullscreen behavior, and platform assistive-technology testing still require host acceptance. The preview host labels itself as local and keeps connection diagnostics collapsed.
+
+## Quiet discovery and motion
+
+Summary values now surface recorded capture dates, camera models, author names, and editing software. One short, evidence-based sentence explains the most relevant implication, prioritizing a GPS coordinate pair or device identifier. Dates are formatted without converting an unknown capture timezone; no address is inferred and no location is sent for geocoding.
+
+Cleanup retains the photo as a visual anchor: a 12% thumbnail lift and restrained halo indicate actual processing. After server verification, the card height settles over 420ms and the new result fades in over 360ms. There is no artificial minimum processing time or fabricated progress percentage. Reduced motion removes scaling, rotation, and the JavaScript transitions; reduced transparency/high contrast removes the halo. Screen-reader status and focus on the save action provide equivalent feedback. Inspired by [Apple’s motion guidance](https://developer.apple.com/design/human-interface-guidelines/motion).

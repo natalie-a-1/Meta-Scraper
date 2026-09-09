@@ -1,5 +1,10 @@
 import { App, applyHostStyleVariables } from "@modelcontextprotocol/ext-apps";
-import { groupedFields, readableName, summaryRows } from "./presentation.mjs";
+import {
+  groupedFields,
+  readableName,
+  summaryRows,
+  photoInsight,
+} from "./presentation.mjs";
 
 const $ = (id) => document.getElementById(id);
 const embedded = window.parent !== window;
@@ -64,6 +69,7 @@ function updateButtons() {
 }
 async function action(message, callback) {
   if (busy) return;
+  const previousId = current?.photoId;
   busy = true;
   error();
   status(message);
@@ -77,6 +83,8 @@ async function action(message, callback) {
   } finally {
     busy = false;
     updateButtons();
+    if (current?.cleaning && current.photoId !== previousId)
+      $("download").focus({ preventScroll: true });
   }
 }
 async function call(name, args) {
@@ -223,10 +231,13 @@ function render(result) {
     ? "A new copy, checked and ready to save."
     : empty
       ? "No removable metadata was detected in this file."
-      : "These details are saved inside the file.";
+      : photoInsight(current.fields);
   $("result-icon").hidden = !clean && !empty;
   $("overview").replaceChildren();
-  for (const row of summaryRows(current.fields)) {
+  for (const row of summaryRows(
+    current.fields,
+    document.documentElement.lang || "en-US",
+  )) {
     const div = document.createElement("div");
     div.className = "overview-row";
     const dt = document.createElement("dt");
@@ -294,14 +305,49 @@ async function sharePhotoContext(result) {
       .catch(() => {});
 }
 async function clean(selection) {
-  const result = await call("remove_metadata", {
-    photoId: current.photoId,
-    selection,
-  });
   await closeInspector();
-  render(result);
-  await sharePhotoContext(result);
-  $("download").focus();
+  const panel = $("panel");
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  panel.dataset.working = "true";
+  const oldSummary = $("file-summary").textContent;
+  $("file-summary").textContent = "Removing details…";
+  try {
+    const result = await call("remove_metadata", {
+      photoId: current.photoId,
+      selection,
+    });
+    const height = panel.getBoundingClientRect().height;
+    render(result);
+    panel.dataset.working = "false";
+    const nextHeight = panel.getBoundingClientRect().height;
+    if (!reduced) {
+      panel.animate(
+        [{ height: `${height}px` }, { height: `${nextHeight}px` }],
+        { duration: 420, easing: "cubic-bezier(.22,1,.36,1)" },
+      );
+      for (const el of [
+        $("headline"),
+        $("description"),
+        $("overview"),
+        $("download"),
+      ]) {
+        el.animate(
+          [
+            { opacity: 0, transform: "translateY(5px)" },
+            { opacity: 1, transform: "translateY(0)" },
+          ],
+          { duration: 360, easing: "cubic-bezier(.22,1,.36,1)" },
+        );
+      }
+    }
+    status("Hidden details updated. Your copy is ready to save.");
+    await sharePhotoContext(result);
+  } catch (cause) {
+    $("file-summary").textContent = oldSummary;
+    throw cause;
+  } finally {
+    delete panel.dataset.working;
+  }
 }
 async function closeInspector() {
   $("inspector").close();

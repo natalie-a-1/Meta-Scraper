@@ -60,3 +60,7 @@ Reproduced a stack overflow in the repeated-group base64 validation regex with a
 ## Conversation-first redesign
 
 The v3 component replaces the inline technical list with plain-language categories and one primary action. Exact fields are available in a separate, keyboard-contained inspector; the host can expand it to fullscreen. Tested category-level GPS removal while retaining names/notes, Escape dismissal, full cleanup, local thumbnail loading, a 390px dark layout, and the simpler upload prompt. A new presentation regression test confirms exact field coverage and avoids inventing absent location information. All 23 tests pass. See [DESIGN.md](./DESIGN.md) for the design rationale and remaining host acceptance work.
+
+## Discovery and motion refinement
+
+All 24 tests pass, including additional checks for recorded-value summaries, invalid dates, and insight fallback behavior. The local browser flow was exercised with a deliberately delayed test response to inspect the subtle thumbnail processing cue and verified completion transition. Reduced-motion mode uses a static thumbnail and halo. Test delays are confined to browser verification; production adds no processing delay.
