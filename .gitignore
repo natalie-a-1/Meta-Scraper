@@ -37,4 +37,10 @@ test-image/*.webp
 test-image/*.tiff
 
 # Exiftool temp files
-*_original 
+*_original
+
+# Local browser verification artifacts
+.playwright-cli/
+output/
+.vercel
+.env*

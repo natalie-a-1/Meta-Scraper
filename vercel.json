@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "regions": ["iad1"],
+  "services": {
+    "mcp": { "root": ".", "entrypoint": "Dockerfile.vercel" }
+  },
+  "rewrites": [
+    { "source": "/(.*)", "destination": { "service": "mcp" } }
+  ]
+}
