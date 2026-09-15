@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "domain": "luccilabs.xyz",
+  "environments": {
+    "production": {
+      "host": "mcp.luccilabs.xyz",
+      "gatewayProject": "lucci-mcp",
+      "gatewayProjectId": "prj_yOhXWhL8r0oNhXLDoe452xuBFKX4"
+    },
+    "sandbox": {
+      "host": "sandbox.mcp.luccilabs.xyz",
+      "gatewayProject": "lucci-mcp-sandbox",
+      "gatewayProjectId": "prj_mPuOoW3aPudxJhdrfob5lbTtRZoP"
+    }
+  },
+  "products": {
+    "metascraper": {
+      "displayName": "MetaScraper",
+      "production": {
+        "project": "metascraper",
+        "origin": "https://mcp.metascraper.luccilabs.xyz",
+        "projectId": "prj_BGCHc6SEVzVf5y7NKfPhffrq9HCN",
+        "chatgptAppId": "asdk_app_6aa6c65f17048191b8d5f66961288d7b"
+      },
+      "sandbox": {
+        "project": "metascraper-sandbox",
+        "origin": "https://metascraper-sandbox.vercel.app",
+        "projectId": "prj_SwTCAuzwckaQ7qJoKYOGQ0dA23g1",
+        "chatgptAppId": "asdk_app_6aa6c6f7ed308191841445363567f874"
+      },
+      "upstreamMcpPath": "/mcp"
+    }
+  },
+  "reservedSlugs": [
+    "launch",
+    "pilot"
+  ]
+}

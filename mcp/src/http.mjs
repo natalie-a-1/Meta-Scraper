@@ -2,8 +2,10 @@ import express from "express";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createMcpServer } from "./server.mjs";
 import { toolDefinitions, invokeTool } from "./tools.mjs";
+import { Readable } from "node:stream";
+import { pipeline } from "node:stream/promises";
 
-export function createHttpApp({ store, html, getBaseUrl }) {
+export function createHttpApp({ store, html, getBaseUrl, allowedOrigins = [] }) {
   const app = express();
   app.disable("x-powered-by");
   app.use((req, res, next) => {
@@ -14,14 +16,15 @@ export function createHttpApp({ store, html, getBaseUrl }) {
     });
     const baseUrl = new URL(getBaseUrl());
     // No trust in forwarded Host headers; protects local deployments from DNS rebinding.
-    if (req.headers.host !== baseUrl.host)
+    const origins = [baseUrl.origin, ...allowedOrigins];
+    if (!origins.some((origin) => new URL(origin).host === req.headers.host))
       return res.status(403).json({ error: "Unrecognized host." });
-    if (req.headers.origin && req.headers.origin !== baseUrl.origin)
+    if (req.headers.origin && !origins.includes(req.headers.origin))
       return res.status(403).json({ error: "Unrecognized origin." });
     next();
   });
   app.get("/health", (_req, res) => res.json({ status: "ok" }));
-  app.get("/", (_req, res) => {
+  app.get(["/", "/ui"], (_req, res) => {
     res.set(
       "Content-Security-Policy",
       "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; img-src blob:; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
@@ -36,8 +39,12 @@ export function createHttpApp({ store, html, getBaseUrl }) {
         "Content-Disposition": `attachment; filename="photo.${photo.metadata.format.toLowerCase()}"; filename*=UTF-8''${encodeURIComponent(photo.name)}`,
         "Content-Length": String(bytes.length),
       });
-      res.send(bytes);
+      await pipeline(Readable.from((function* () {
+        for (let start = 0; start < bytes.length; start += 64 * 1024)
+          yield bytes.subarray(start, start + 64 * 1024);
+      })()), res);
     } catch {
+      if (res.headersSent) { res.destroy(); return; }
       res
         .status(404)
         .json({ error: "Photo expired or unavailable. Upload it again." });

@@ -1,4 +1,4 @@
-# Meta-Scraper
+# MetaScraper
 
 Inspect and remove photo metadata in **ChatGPT, Claude, or another MCP client**. Upload an original photo, see its embedded fields, then remove selected fields or all removable metadata and download a separate copy.
 
@@ -25,7 +25,7 @@ See [connection and deployment instructions](mcp/README.md) for ChatGPT, Claude,
 
 Try asking:
 
-> “Open Meta-Scraper so I can check a photo before sharing it.”
+> “Open MetaScraper so I can check a photo before sharing it.”
 >
 > “Show the metadata in this attached photo.”
 >
@@ -53,3 +53,7 @@ Checks cover real image processing, pixel/frame preservation, MCP transports, UI
 The original VS Code extension remains available with its own dependencies and commands: [usage](docs/VS_CODE.md), [testing](TESTING.md), [publishing](PUBLISHING.md).
 
 [MIT license](LICENSE).
+
+### Lucci Labs MCP hosting
+
+MetaScraper uses `https://mcp.luccilabs.xyz/metascraper` in production and `https://sandbox.mcp.luccilabs.xyz/metascraper` for isolated testing. See [shared conventions](infra/mcp-gateway/CONVENTIONS.md), [deployment instructions](mcp/deploy/README.md), and the [agent migration prompt](infra/mcp-gateway/AGENT-PROMPT.md).

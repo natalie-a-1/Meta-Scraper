@@ -5,7 +5,24 @@ import {
   summaryRows,
   categoryOf,
   photoInsight,
+  focusedDetails,
 } from "../web/presentation.mjs";
+
+test("focused answers show recorded values and removal covers the entire category", () => {
+  const fields = [
+    { id: "GPS:GPSLatitude", group: "GPS", name: "GPSLatitude", value: "40.1234" },
+    { id: "GPS:GPSLatitudeRef", group: "GPS", name: "GPSLatitudeRef", value: "N" },
+    { id: "XMP:Location", group: "XMP", name: "Location", value: "Test location" },
+    { id: "IFD0:Model", group: "IFD0", name: "Model", value: "Test camera" },
+  ];
+  const location = focusedDetails(fields, "location");
+  assert.equal(location.rows[0].value, "40.1234° N");
+  assert.deepEqual(location.fieldIds, fields.slice(0, 3).map(({ id }) => id));
+  assert.equal(location.rows.length, 2);
+  assert.equal(focusedDetails(fields, "device").rows[0].value, "Test camera");
+  assert.equal(focusedDetails(fields, "date").rows.length, 0);
+  assert.equal(focusedDetails(fields, "overview"), null);
+});
 
 test("plain-language groups cover every exact field once, including GPS across formats", () => {
   const fields = [

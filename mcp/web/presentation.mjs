@@ -175,3 +175,37 @@ export function photoInsight(fields) {
     return "Your editing software left a signature in this file.";
   return "These details travel with the file when you share it.";
 }
+
+export function focusedDetails(fields, focus) {
+  const category = categories.find(({ id }) => id === focus);
+  if (!category) return null;
+  const matching = fields.filter((field) => categoryOf(field) === focus);
+  const preferred = {
+    location: ["GPSLatitude", "GPSLongitude", "City", "Country", "GPSAltitude"],
+    date: ["DateTimeOriginal", "OffsetTimeOriginal", "CreateDate", "ModifyDate"],
+    device: ["Model", "Make", "LensModel", "FocalLength", "ISO", "ExposureTime", "FNumber"],
+    author: ["Artist", "Author", "OwnerName", "Copyright", "Title", "Description"],
+    other: ["Software", "CreatorTool"],
+  }[focus];
+  const ordered = [...matching].sort((a, b) => {
+    const rank = (field) => preferred.includes(field.name) ? preferred.indexOf(field.name) : 100;
+    return rank(a) - rank(b);
+  });
+  const rows = ordered.filter(({ name }) => !/^(GPSVersionID|GPSLatitudeRef|GPSLongitudeRef)$/.test(name))
+    .slice(0, 6).map((field) => {
+      let value = field.value;
+      if (["GPSLatitude", "GPSLongitude"].includes(field.name)) {
+        const ref = matching.find(({ name }) => name === `${field.name}Ref`)?.value;
+        if (ref) value = `${value}° ${ref}`;
+      }
+      return { title: readableName(field), value: value.length > 180 ? `${value.slice(0, 177)}…` : value, icon: category.icon };
+    });
+  return {
+    title: category.title,
+    description: matching.length
+      ? "Recorded in this file."
+      : "No matching details were found in this file.",
+    rows,
+    fieldIds: matching.map(({ id }) => id),
+  };
+}

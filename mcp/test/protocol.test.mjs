@@ -1,5 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { z } from "zod";
 import { readFile } from "node:fs/promises";
 import { get } from "node:http";
 import { tmpdir } from "node:os";
@@ -61,6 +63,9 @@ test("Streamable HTTP: tool discovery, file schema, upload, inspect, remove, dow
     assert.equal(typeof tool.annotations.openWorldHint, "boolean");
   }
   const importer = tools.find((tool) => tool.name === "import_photo");
+  const uploader = tools.find((tool) => tool.name === "upload_photo");
+  assert.deepEqual(uploader._meta.ui.visibility, ["app"]);
+  assert.equal(uploader._meta["openai/visibility"], "private");
   assert.deepEqual(importer._meta["openai/fileParams"], ["file"]);
   assert.deepEqual(importer.inputSchema.properties.file.required, [
     "download_url",
@@ -83,6 +88,9 @@ test("Streamable HTTP: tool discovery, file schema, upload, inspect, remove, dow
   });
   assert.ok(!uploaded.isError, JSON.stringify(uploaded));
   const photoId = uploaded.structuredContent.photo.photoId;
+  const focused = await client.callTool({ name: "open_photo", arguments: { photoId, focus: "location" } });
+  assert.equal(focused.structuredContent.focus, "location");
+  assert.equal(focused.structuredContent.photo.photoId, photoId);
   const viewed = await client.callTool({
     name: "view_metadata",
     arguments: { photoId },
@@ -129,6 +137,20 @@ test("Streamable HTTP: tool discovery, file schema, upload, inspect, remove, dow
     },
   });
   assert.equal(blocked.isError, true);
+});
+
+test("skill discovery returns the deployed workflow with a verified resource digest", async (t) => {
+  const { client } = await start(t);
+  assert.deepEqual(client.getServerCapabilities().extensions["io.modelcontextprotocol/skills"], {});
+  const catalog = await client.request({ method: "skills/list", params: {} }, z.object({ skills: z.array(z.any()) }));
+  assert.equal(catalog.skills.length, 1);
+  const skill = catalog.skills[0];
+  const result = await client.request({ method: "skills/get", params: { uri: skill.uri } }, z.object({ skill: z.any() }));
+  assert.deepEqual(result.skill, skill);
+  const { contents } = await client.readResource({ uri: skill.uri });
+  assert.equal(contents.length, 1);
+  assert.equal(skill.resources[0].digest, `sha256:${createHash("sha256").update(contents[0].text).digest("hex")}`);
+  assert.ok(client.getInstructions().includes(contents[0].text.split("---\n")[2].trim()));
 });
 
 test("MCP Apps bridge: initialize, receive result, upload, clean, update context, and host-mediated download", async (t) => {

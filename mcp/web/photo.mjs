@@ -1,15 +1,18 @@
 import { App, applyHostStyleVariables } from "@modelcontextprotocol/ext-apps";
+import { expiredMessage, photoExpired, photoError } from "./photo-lifecycle.mjs";
+import { uploadFile } from "./upload.mjs";
 import {
   groupedFields,
   readableName,
   summaryRows,
   photoInsight,
+  focusedDetails,
 } from "./presentation.mjs";
 
 const $ = (id) => document.getElementById(id);
 const embedded = window.parent !== window;
 const app = embedded
-  ? new App({ name: "Meta-Scraper", version: "0.1.0" })
+  ? new App({ name: "MetaScraper", version: "0.1.0" })
   : null;
 let current = null,
   originalId = null,
@@ -18,6 +21,10 @@ let current = null,
 let busy = true,
   connected = !embedded,
   expandedHost = false;
+let expiryTimer;
+let hydrating = false;
+let currentFocus = "overview";
+let uploadChunkBytes;
 const selected = new Set();
 const paths = {
   photo:
@@ -50,9 +57,26 @@ function error(message = "") {
 }
 function persistSelection() {
   window.openai?.setWidgetState?.({
-    privateContent: { photoId: current?.photoId, selected: [...selected] },
+    privateContent: { photoId: current?.photoId, originalId, focus: currentFocus, selected: [...selected] },
   });
 }
+function expirePhoto() {
+  void closeInspector();
+  reset();
+  error(expiredMessage);
+}
+function handleError(cause) {
+  const failure = photoError(cause);
+  if (failure.expired) expirePhoto();
+  else error(failure.message);
+}
+function checkExpiry() {
+  if (busy || !photoExpired(current)) return false;
+  expirePhoto();
+  return true;
+}
+document.addEventListener("visibilitychange", checkExpiry);
+window.addEventListener("focus", checkExpiry);
 function updateButtons() {
   $("panel").setAttribute("aria-busy", String(busy));
   for (const button of document.querySelectorAll("button"))
@@ -69,6 +93,7 @@ function updateButtons() {
 }
 async function action(message, callback) {
   if (busy) return;
+  if (checkExpiry()) return;
   const previousId = current?.photoId;
   busy = true;
   error();
@@ -78,10 +103,11 @@ async function action(message, callback) {
     await callback();
     status();
   } catch (cause) {
-    error(cause.message || "Something went wrong. Try again.");
+    handleError(cause);
     status();
   } finally {
     busy = false;
+    checkExpiry();
     updateButtons();
     if (current?.cleaning && current.photoId !== previousId)
       $("download").focus({ preventScroll: true });
@@ -91,7 +117,7 @@ async function call(name, args) {
   const result = app
     ? await app.callServerTool({ name, arguments: args })
     : await (
-        await fetch(`/api/tools/${name}`, {
+        await fetch(`${window.location.pathname.replace(/\/ui\/?$/, "").replace(/\/$/, "")}/api/tools/${name}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(args),
@@ -198,9 +224,16 @@ function drawInspector() {
   syncSelection();
 }
 function render(result) {
+  uploadChunkBytes = result?.uploadChunkBytes || uploadChunkBytes;
   if (!result?.photo) return;
+  if (photoExpired(result.photo)) {
+    expirePhoto();
+    return;
+  }
+  clearTimeout(expiryTimer);
   const changed = current?.photoId !== result.photo.photoId;
   current = result.photo;
+  currentFocus = result.focus || "overview";
   downloadUrl = result.downloadUrl;
   if (!current.cleaning) originalId = current.photoId;
   if (changed) {
@@ -220,6 +253,7 @@ function render(result) {
     `${current.format} · ${current.byteSize >= 1024 * 1024 ? `${(current.byteSize / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(current.byteSize / 1024))} KB`}`;
   const clean = Boolean(current.cleaning),
     empty = !current.fields.length;
+  const focused = clean ? null : focusedDetails(current.fields, currentFocus);
   $("headline").textContent = clean
     ? empty
       ? "Hidden details removed"
@@ -227,14 +261,16 @@ function render(result) {
     : empty
       ? "No hidden details found"
       : "Details included with this photo";
+  if (focused) $("headline").textContent = focused.title;
   $("description").textContent = clean
     ? "A new copy, checked and ready to save."
     : empty
       ? "No removable metadata was detected in this file."
       : photoInsight(current.fields);
+  if (focused) $("description").textContent = focused.description;
   $("result-icon").hidden = !clean && !empty;
   $("overview").replaceChildren();
-  for (const row of summaryRows(
+  for (const row of focused?.rows || summaryRows(
     current.fields,
     document.documentElement.lang || "en-US",
   )) {
@@ -247,8 +283,10 @@ function render(result) {
     div.append(dt, dd);
     $("overview").append(div);
   }
-  $("overview").hidden = empty;
-  $("remove-all").hidden = clean || empty;
+  $("overview").hidden = focused ? !focused.rows.length : empty;
+  $("remove-all").hidden = clean || empty || (focused && !focused.fieldIds.length);
+  $("remove-all").textContent = focused ? `Remove ${focused.title.toLowerCase()}` : "Remove hidden details";
+  $("show-all").hidden = !focused;
   $("download").hidden = !clean;
   $("customize").textContent = empty
     ? "View details"
@@ -264,6 +302,10 @@ function render(result) {
   $("warnings").hidden = !current.cleaning?.warnings.length;
   $("warnings").textContent = current.cleaning?.warnings.join(" ") || "";
   drawInspector();
+  persistSelection();
+  const remaining = Date.parse(current.expiresAt) - Date.now();
+  if (Number.isFinite(remaining))
+    expiryTimer = setTimeout(checkExpiry, Math.max(1, remaining + 1));
   updateButtons();
 }
 function clearPreview() {
@@ -273,7 +315,9 @@ function clearPreview() {
   $("preview").removeAttribute("src");
 }
 function reset() {
+  clearTimeout(expiryTimer);
   current = null;
+  currentFocus = "overview";
   originalId = null;
   downloadUrl = null;
   selected.clear();
@@ -383,13 +427,7 @@ $("photo-file").onchange = () =>
     if (!file) return;
     if (!file.size || file.size > 20 * 1024 * 1024)
       throw new Error("Choose a photo smaller than 20 MB.");
-    const base64 = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onerror = () => reject(new Error("Could not read this photo."));
-      reader.onload = () => resolve(String(reader.result).split(",")[1]);
-      reader.readAsDataURL(file);
-    });
-    const result = await call("upload_photo", { fileName: file.name, base64 });
+    const result = await uploadFile(file, call, uploadChunkBytes);
     clearPreview();
     previewUrl = URL.createObjectURL(file);
     $("preview").onload = () => {
@@ -434,7 +472,8 @@ $("library").onclick = () =>
     await sharePhotoContext(result);
   });
 $("remove-all").onclick = () =>
-  action("Removing hidden details…", () => clean("all"));
+  action("Removing hidden details…", () => clean(focusedDetails(current.fields, currentFocus)?.fieldIds || "all"));
+$("show-all").onclick = () => render({ photo: current, downloadUrl, focus: "overview" });
 $("remove-selected").onclick = () =>
   action("Removing selected details…", () => clean([...selected]));
 $("original").onclick = () =>
@@ -469,12 +508,32 @@ $("download").onclick = () =>
     }
   });
 if (app) {
-  app.ontoolresult = (result) => {
+  app.ontoolresult = async (result) => {
     if (result.isError)
-      error(result.content?.find((item) => item.type === "text")?.text);
+      handleError(result.content?.find((item) => item.type === "text")?.text);
     else {
       clearPreview();
-      render(result.structuredContent);
+      const saved = window.openai?.widgetState?.privateContent;
+      hydrating = true;
+      busy = true;
+      updateButtons();
+      try {
+        // Chat history replays the original tool result. Recover the latest
+        // widget handle from the server instead of reviving a stale copy.
+        const handle = saved?.photoId || result.structuredContent?.photo?.photoId;
+        const latest = handle
+          ? await call("view_metadata", { photoId: handle })
+          : result.structuredContent;
+        originalId = saved?.originalId || null;
+        render({ ...latest, focus: result.structuredContent?.focus || saved?.focus || "overview" });
+      } catch (cause) {
+        handleError(cause);
+      } finally {
+        hydrating = false;
+        busy = false;
+        checkExpiry();
+        updateButtons();
+      }
     }
   };
   const applyContext = (context) => {
@@ -487,7 +546,7 @@ if (app) {
     .connect()
     .then(() => {
       connected = true;
-      busy = false;
+      busy = hydrating;
       status();
       applyContext(app.getHostContext());
       updateFileLibrary();
@@ -500,6 +559,5 @@ if (app) {
     });
 } else {
   busy = false;
-  status();
-  updateButtons();
+  void action("", async () => render(await call("open_photo", {})));
 }

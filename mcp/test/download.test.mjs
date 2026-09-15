@@ -8,12 +8,19 @@ test("attachment imports accept only HTTPS OpenAI file hosts without credentials
       .hostname,
     "files.oaiusercontent.com",
   );
+  for (const region of ["westus3", "southcentralus", "centralus", "northcentralus"]) {
+    const hostname = `oaisdmntpr${region}.blob.core.windows.net`;
+    assert.equal(validateUploadUrl(`https://${hostname}/attachment?sig=test`).hostname, hostname);
+  }
   for (const url of [
     "file:///etc/passwd",
     "http://files.oaiusercontent.com/photo",
     "https://localhost/photo",
     "https://files.oaiusercontent.com.evil.test/photo",
     "https://evil.test/photo",
+    "https://attacker.blob.core.windows.net/photo",
+    "https://oaisdmntprwestus3.blob.core.windows.net.evil.test/photo",
+    "https://oaisdmntprwestus4.blob.core.windows.net/photo",
     "https://user:secret@files.oaiusercontent.com/photo",
     "https://files.oaiusercontent.com:8443/photo",
     "invalid",

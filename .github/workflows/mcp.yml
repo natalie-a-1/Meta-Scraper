@@ -1,9 +1,9 @@
 name: MCP app
 on:
   push:
-    paths: ['mcp/**', '.github/workflows/mcp.yml']
+    paths: ['mcp/**', 'infra/mcp-gateway/**', 'Dockerfile.vercel', 'vercel.json', '.vercelignore', '.dockerignore', '.github/workflows/mcp.yml']
   pull_request:
-    paths: ['mcp/**', '.github/workflows/mcp.yml']
+    paths: ['mcp/**', 'infra/mcp-gateway/**', 'Dockerfile.vercel', 'vercel.json', '.vercelignore', '.dockerignore', '.github/workflows/mcp.yml']
 permissions:
   contents: read
 jobs:
@@ -30,3 +30,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: docker build -f mcp/Dockerfile -t meta-scraper .
+      - run: docker build -f Dockerfile.vercel -t meta-scraper-vercel .

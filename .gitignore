@@ -42,3 +42,5 @@ test-image/*.tiff
 # Local browser verification artifacts
 .playwright-cli/
 output/
+.vercel
+.env*

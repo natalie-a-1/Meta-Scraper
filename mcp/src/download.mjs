@@ -4,6 +4,15 @@ import { BlockList, isIPv4 } from "node:net";
 import { MAX_BYTES } from "./store.mjs";
 import { UserError } from "./errors.mjs";
 
+// Observed from ChatGPT's original-file parameter in native acceptance testing.
+// Do not allow arbitrary Azure tenants or all *.blob.core.windows.net hosts.
+const chatgptStorageHosts = new Set([
+  "oaisdmntprwestus3.blob.core.windows.net",
+  "oaisdmntprsouthcentralus.blob.core.windows.net",
+  "oaisdmntprcentralus.blob.core.windows.net",
+  "oaisdmntprnorthcentralus.blob.core.windows.net",
+]);
+
 const blocked = new BlockList();
 for (const [network, prefix] of [
   ["0.0.0.0", 8],
@@ -40,11 +49,12 @@ export function validateUploadUrl(value) {
     url.port ||
     !(
       url.hostname === "oaiusercontent.com" ||
-      url.hostname.endsWith(".oaiusercontent.com")
+      url.hostname.endsWith(".oaiusercontent.com") ||
+      chatgptStorageHosts.has(url.hostname)
     )
   ) {
     throw new UserError(
-      "Only ChatGPT attachment links are accepted. In other clients, upload the original photo in the Meta-Scraper panel.",
+      "Only ChatGPT attachment links are accepted. In other clients, upload the original photo in the MetaScraper panel.",
     );
   }
   return url;
@@ -57,6 +67,10 @@ export function isPublicIPv4(address) {
 }
 
 export async function downloadAttachment(value) {
+  if (process.env.DEBUG_MCP === "1") {
+    try { console.error("Attachment origin:", new URL(value).origin); }
+    catch { console.error("Attachment URL is malformed"); }
+  }
   const url = validateUploadUrl(value);
   // Pin a validated IPv4 address for this request; HTTPS still validates the
   // original hostname. No redirects or arbitrary hosts, even through DNS rebinding.
@@ -81,6 +95,7 @@ export async function downloadAttachment(value) {
         headers: { Accept: "image/*", "Accept-Encoding": "identity" },
       },
       (response) => {
+        if (process.env.DEBUG_MCP === "1") console.error("Attachment HTTP status:", response.statusCode);
         if (
           response.statusCode !== 200 ||
           Number(response.headers["content-length"] || 0) > MAX_BYTES
