@@ -3,148 +3,292 @@
 const vscode = require('vscode');
 const { ExifTool } = require('exiftool-vendored');
 const path = require('path');
-const fs = require('fs');
+const { execFile } = require('child_process');
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
+// Media formats exiftool can strip metadata from in place: images plus the
+// QuickTime/MP4 video family (exiftool has full write support for these).
+const MEDIA_EXTENSIONS = [
+	'.jpg', '.jpeg', '.png', '.gif', '.tif', '.tiff', '.webp', '.heic', '.heif', '.bmp',
+	'.mp4', '.mov', '.m4v'
+];
+
+// Glob brace body used for workspace.findFiles and the file-system watcher.
+const MEDIA_GLOB = '**/*.{jpg,jpeg,png,gif,tif,tiff,webp,heic,heif,bmp,mp4,mov,m4v}';
+
+// The single active media watcher (module-scoped so it can be disposed and
+// recreated when settings or workspace folders change).
+let mediaWatcher;
+
+function isMediaFile(filePath) {
+	return MEDIA_EXTENSIONS.includes(path.extname(filePath).toLowerCase());
+}
+
+function isIgnoredPath(filePath) {
+	return /[/\\](node_modules|\.git)[/\\]/.test(filePath);
+}
+
+/**
+ * Strip all metadata from a single media file, in place.
+ * @param {string} filePath
+ * @param {import('exiftool-vendored').ExifTool} exiftool
+ * @returns {Promise<{ok: boolean, reason?: string}>}
+ */
+async function stripFile(filePath, exiftool) {
+	try {
+		// `-overwrite_original` writes back to the same file (no `_original` backup);
+		// `-P` preserves the filesystem modification time.
+		await exiftool.write(filePath, { all: '' }, ['-overwrite_original', '-P']);
+		return { ok: true };
+	} catch (err) {
+		return { ok: false, reason: err.message };
+	}
+}
+
+/**
+ * True if the given folder is inside a Git repository that has at least one remote
+ * (i.e. a repo that can be pushed online). Resolves false if git is unavailable or
+ * the folder is not a repo.
+ * @param {string} folderPath
+ * @returns {Promise<boolean>}
+ */
+function hasRemoteOrigin(folderPath) {
+	return new Promise((resolve) => {
+		execFile('git', ['-C', folderPath, 'remote'], (err, stdout) => {
+			resolve(!err && stdout.trim().length > 0);
+		});
+	});
+}
+
+// Handle a newly created media file according to the `onNewMedia` setting.
+async function handleNewMedia(uri) {
+	if (isIgnoredPath(uri.fsPath)) {
+		return;
+	}
+
+	const action = vscode.workspace.getConfiguration('metascraper').get('onNewMedia', 'ask');
+	if (action === 'nothing') {
+		return;
+	}
+
+	const fileName = path.basename(uri.fsPath);
+	if (action === 'ask') {
+		const choice = await vscode.window.showInformationMessage(
+			`New media added: "${fileName}". Strip its metadata before it could be pushed online?`,
+			'Strip', 'Ignore'
+		);
+		if (choice !== 'Strip') {
+			return;
+		}
+	}
+
+	const exiftool = new ExifTool();
+	try {
+		const result = await stripFile(uri.fsPath, exiftool);
+		if (result.ok) {
+			vscode.window.setStatusBarMessage(`MetaScraper: stripped metadata from ${fileName}`, 4000);
+		} else {
+			vscode.window.showWarningMessage(`MetaScraper: could not strip "${fileName}": ${result.reason}`);
+		}
+	} finally {
+		await exiftool.end();
+	}
+}
+
+/**
+ * (Re)create the media watcher. It is active only when `autoDetectNewMedia` is
+ * enabled and at least one workspace folder is a Git repo with a remote, matching
+ * the "repos made public online" use case.
+ * @param {vscode.ExtensionContext} context
+ */
+async function setupWatcher(context) {
+	if (mediaWatcher) {
+		mediaWatcher.dispose();
+		mediaWatcher = undefined;
+	}
+
+	const enabled = vscode.workspace.getConfiguration('metascraper').get('autoDetectNewMedia', false);
+	if (!enabled) {
+		return;
+	}
+
+	const folders = vscode.workspace.workspaceFolders || [];
+	if (folders.length === 0) {
+		return;
+	}
+
+	const remotes = await Promise.all(folders.map((f) => hasRemoteOrigin(f.uri.fsPath)));
+	if (!remotes.some(Boolean)) {
+		return;
+	}
+
+	mediaWatcher = vscode.workspace.createFileSystemWatcher(MEDIA_GLOB);
+	mediaWatcher.onDidCreate(handleNewMedia);
+	context.subscriptions.push(mediaWatcher);
+}
 
 /**
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Metadata Scraper extension is now active');
+	console.log('MetaScraper extension is now active');
 
-	// Register the command to clean metadata from an image
+	// One-time setup, offered the first time the folder command is run in a workspace.
+	async function maybeRunFirstTimeSetup() {
+		if (context.workspaceState.get('metascraper.firstRunPrompted')) {
+			return;
+		}
+		await context.workspaceState.update('metascraper.firstRunPrompted', true);
+
+		const config = vscode.workspace.getConfiguration('metascraper');
+		const enable = await vscode.window.showInformationMessage(
+			'Automatically detect newly added media in this folder and protect it before pushing online?',
+			'Yes', 'No'
+		);
+		if (enable !== 'Yes') {
+			await config.update('autoDetectNewMedia', false, vscode.ConfigurationTarget.Workspace);
+			return;
+		}
+		await config.update('autoDetectNewMedia', true, vscode.ConfigurationTarget.Workspace);
+
+		const choice = await vscode.window.showQuickPick(
+			[
+				{ label: 'Automatically strip metadata', value: 'strip' },
+				{ label: 'Ask for permission', value: 'ask' },
+				{ label: 'Do nothing', value: 'nothing' }
+			],
+			{ placeHolder: 'When new media is added:' }
+		);
+		if (choice) {
+			await config.update('onNewMedia', choice.value, vscode.ConfigurationTarget.Workspace);
+		}
+
+		await setupWatcher(context);
+	}
+
+	// Command: strip metadata from every media file in the folder / workspace.
+	const stripFolderDisposable = vscode.commands.registerCommand('metascraper.stripFolder', async function (folderUri) {
+		let searchPattern;
+		if (folderUri && folderUri.fsPath) {
+			// Invoked from the explorer context menu on a specific folder.
+			searchPattern = new vscode.RelativePattern(folderUri, MEDIA_GLOB);
+		} else if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+			// Invoked from the command palette: search all workspace folders.
+			searchPattern = MEDIA_GLOB;
+		} else {
+			vscode.window.showErrorMessage('Open a folder to strip media metadata.');
+			return;
+		}
+
+		await maybeRunFirstTimeSetup();
+
+		const files = await vscode.workspace.findFiles(searchPattern, '**/{node_modules,.git}/**');
+		if (files.length === 0) {
+			vscode.window.showInformationMessage('No media files found to strip.');
+			return;
+		}
+
+		await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			title: 'Stripping metadata from media',
+			cancellable: true
+		}, async (progress, token) => {
+			const exiftool = new ExifTool();
+			let stripped = 0;
+			let skipped = 0;
+			try {
+				for (let i = 0; i < files.length; i++) {
+					if (token.isCancellationRequested) {
+						break;
+					}
+					const fileName = path.basename(files[i].fsPath);
+					progress.report({
+						message: `(${i + 1}/${files.length}) ${fileName}`,
+						increment: 100 / files.length
+					});
+					const result = await stripFile(files[i].fsPath, exiftool);
+					if (result.ok) {
+						stripped++;
+					} else {
+						skipped++;
+						console.warn(`MetaScraper: skipped ${fileName}: ${result.reason}`);
+					}
+				}
+			} finally {
+				await exiftool.end();
+			}
+			const summary = `MetaScraper: stripped ${stripped} file(s)` + (skipped ? `, skipped ${skipped} (unsupported)` : '');
+			vscode.window.showInformationMessage(summary);
+		});
+	});
+
+	// Command: strip metadata from a single media file (explorer right-click).
 	const cleanMetadataDisposable = vscode.commands.registerCommand('metascraper.cleanMetadata', async function (fileUri) {
 		if (!fileUri) {
-			// If command was triggered from command palette without a file
-			vscode.window.showErrorMessage('Please right-click on an image file to clean its metadata.');
+			vscode.window.showErrorMessage('Please right-click on a media file to strip its metadata.');
 			return;
 		}
 
 		const filePath = fileUri.fsPath;
 		const fileName = path.basename(filePath);
-		const fileExt = path.extname(filePath).toLowerCase();
-		
-		// Check if the file is an image
-		const supportedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.tiff', '.webp'];
-		if (!supportedExtensions.includes(fileExt)) {
-			vscode.window.showErrorMessage(`File "${fileName}" is not a supported image format.`);
+		if (!isMediaFile(filePath)) {
+			vscode.window.showErrorMessage(`File "${fileName}" is not a supported media format.`);
 			return;
 		}
 
 		try {
-			// Show progress notification
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
-				title: `Cleaning metadata from ${fileName}`,
+				title: `Stripping metadata from ${fileName}`,
 				cancellable: false
-			}, async (progress) => {
-				// Initialize ExifTool
+			}, async () => {
 				const exiftool = new ExifTool();
-				
 				try {
-					progress.report({ message: 'Reading metadata...' });
-					
-					// Read the current metadata (for informational purposes)
-					const metadata = await exiftool.read(filePath);
-					console.log('Original metadata:', metadata);
-					
-					progress.report({ message: 'Cleaning metadata...' });
-					
-					// Generate a temporary file path in the same directory
-					const dirPath = path.dirname(filePath);
-					const baseName = path.basename(filePath, fileExt);
-					const tempFilePath = path.join(dirPath, `${baseName}-temp${fileExt}`);
-					
-					// Remove all metadata and write to the temp file
-					await exiftool.write(
-						filePath, 
-						{ all: '' }, 
-						['-P', '-o', tempFilePath]
-					);
-					
-					// Check if both files exist
-					if (fs.existsSync(tempFilePath)) {
-						// If original file exists, delete it first
-						if (fs.existsSync(filePath)) {
-							fs.unlinkSync(filePath);
-						}
-						
-						// Then rename the temp file to the original name
-						fs.renameSync(tempFilePath, filePath);
-						
-						vscode.window.showInformationMessage(`Successfully cleaned metadata from "${fileName}".`);
+					const result = await stripFile(filePath, exiftool);
+					if (result.ok) {
+						vscode.window.showInformationMessage(`Successfully stripped metadata from "${fileName}".`);
 					} else {
-						throw new Error('Failed to create cleaned image file');
+						vscode.window.showErrorMessage(`Failed to strip metadata from "${fileName}": ${result.reason}`);
 					}
-					
-					// Close exiftool process
+				} finally {
 					await exiftool.end();
-				} catch (err) {
-					console.error('Error:', err);
-					// Make sure to close exiftool process on error
-					await exiftool.end();
-					throw err;
 				}
 			});
 		} catch (error) {
-			vscode.window.showErrorMessage(`Failed to clean metadata: ${error.message}`);
+			vscode.window.showErrorMessage(`Failed to strip metadata: ${error.message}`);
 		}
 	});
 
-	// Register the command to view metadata from an image
+	// Command: view a media file's metadata as JSON (explorer right-click).
 	const viewMetadataDisposable = vscode.commands.registerCommand('metascraper.viewMetadata', async function (fileUri) {
 		if (!fileUri) {
-			vscode.window.showErrorMessage('Please right-click on an image file to view its metadata.');
+			vscode.window.showErrorMessage('Please right-click on a media file to view its metadata.');
 			return;
 		}
 
 		const filePath = fileUri.fsPath;
 		const fileName = path.basename(filePath);
-		const fileExt = path.extname(filePath).toLowerCase();
-		
-		// Check if the file is an image
-		const supportedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.tiff', '.webp'];
-		if (!supportedExtensions.includes(fileExt)) {
-			vscode.window.showErrorMessage(`File "${fileName}" is not a supported image format.`);
+		if (!isMediaFile(filePath)) {
+			vscode.window.showErrorMessage(`File "${fileName}" is not a supported media format.`);
 			return;
 		}
 
 		try {
-			// Show progress notification
 			await vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
 				title: `Reading metadata from ${fileName}`,
 				cancellable: false
-			}, async (progress) => {
-				// Initialize ExifTool
+			}, async () => {
 				const exiftool = new ExifTool();
-				
 				try {
-					// Read the current metadata
 					const metadata = await exiftool.read(filePath);
-					
-					// Create a virtual document to display metadata
-					const metadataJson = JSON.stringify(metadata, null, 2);
 					const metadataDoc = await vscode.workspace.openTextDocument({
-						content: metadataJson,
+						content: JSON.stringify(metadata, null, 2),
 						language: 'json'
 					});
-					
-					// Show the document
 					await vscode.window.showTextDocument(metadataDoc, { preview: true });
-					
-					// Close exiftool process
+				} finally {
 					await exiftool.end();
-				} catch (err) {
-					console.error('Error:', err);
-					// Make sure to close exiftool process on error
-					await exiftool.end();
-					throw err;
 				}
 			});
 		} catch (error) {
@@ -152,11 +296,28 @@ function activate(context) {
 		}
 	});
 
-	context.subscriptions.push(cleanMetadataDisposable, viewMetadataDisposable);
+	context.subscriptions.push(stripFolderDisposable, cleanMetadataDisposable, viewMetadataDisposable);
+
+	// Arm the watcher at startup, and re-evaluate when settings or folders change.
+	setupWatcher(context);
+	context.subscriptions.push(
+		vscode.workspace.onDidChangeConfiguration((e) => {
+			if (e.affectsConfiguration('metascraper.autoDetectNewMedia') ||
+				e.affectsConfiguration('metascraper.onNewMedia')) {
+				setupWatcher(context);
+			}
+		}),
+		vscode.workspace.onDidChangeWorkspaceFolders(() => setupWatcher(context))
+	);
 }
 
 // This method is called when your extension is deactivated
-function deactivate() {}
+function deactivate() {
+	if (mediaWatcher) {
+		mediaWatcher.dispose();
+		mediaWatcher = undefined;
+	}
+}
 
 module.exports = {
 	activate,

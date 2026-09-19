@@ -12,6 +12,9 @@ dist/
 .vscode/
 *.vsix
 
+# Claude Code
+.claude/
+
 # Logs
 logs
 *.log

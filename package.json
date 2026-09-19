@@ -1,8 +1,8 @@
 {
   "name": "metascraper",
   "displayName": "metascraper",
-  "description": "Remove metadata from your images",
-  "version": "0.0.2",
+  "description": "Strip metadata from media (images, GIFs, videos) before pushing a repo to a public remote",
+  "version": "0.1.0",
   "publisher": "NatalieHill",
   "publisherUrl": "https://github.com/natalie-a-1/",
   "icon": "./images/icon.png",
@@ -38,32 +38,85 @@
     "type": "git",
     "url": "https://github.com/natalie-a-1/Meta-Scraper.git"
   },
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./extension.js",
   "contributes": {
     "commands": [
       {
+        "command": "metascraper.stripFolder",
+        "title": "Strip Metadata from All Media in Folder",
+        "category": "MetaScraper"
+      },
+      {
         "command": "metascraper.cleanMetadata",
-        "title": "Clean Image Metadata"
+        "title": "Strip Media Metadata",
+        "category": "MetaScraper"
       },
       {
         "command": "metascraper.viewMetadata",
-        "title": "View Image Metadata"
+        "title": "View Media Metadata",
+        "category": "MetaScraper"
       }
     ],
     "menus": {
-      "explorer/context": [
+      "commandPalette": [
+        {
+          "command": "metascraper.stripFolder",
+          "when": "workbenchState != empty"
+        },
         {
           "command": "metascraper.cleanMetadata",
-          "when": "resourceExtname =~ /\\.(jpg|jpeg|png|gif|tiff|webp)$/i",
+          "when": "false"
+        },
+        {
+          "command": "metascraper.viewMetadata",
+          "when": "false"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "metascraper.stripFolder",
+          "when": "explorerResourceIsFolder",
+          "group": "metascraper"
+        },
+        {
+          "command": "metascraper.cleanMetadata",
+          "when": "resourceExtname =~ /\\.(jpg|jpeg|png|gif|tif|tiff|webp|heic|heif|bmp|mp4|mov|m4v)$/i",
           "group": "metascraper"
         },
         {
           "command": "metascraper.viewMetadata",
-          "when": "resourceExtname =~ /\\.(jpg|jpeg|png|gif|tiff|webp)$/i",
+          "when": "resourceExtname =~ /\\.(jpg|jpeg|png|gif|tif|tiff|webp|heic|heif|bmp|mp4|mov|m4v)$/i",
           "group": "metascraper"
         }
       ]
+    },
+    "configuration": {
+      "title": "MetaScraper",
+      "properties": {
+        "metascraper.autoDetectNewMedia": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Automatically detect newly added media in the folder. Only active in workspaces whose Git repository has a remote origin (i.e. repos that can be pushed online)."
+        },
+        "metascraper.onNewMedia": {
+          "type": "string",
+          "enum": [
+            "strip",
+            "ask",
+            "nothing"
+          ],
+          "enumDescriptions": [
+            "Automatically strip metadata",
+            "Ask for permission",
+            "Do nothing"
+          ],
+          "default": "ask",
+          "markdownDescription": "What to do when new media is added (requires `#metascraper.autoDetectNewMedia#`)."
+        }
+      }
     }
   },
   "scripts": {
