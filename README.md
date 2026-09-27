@@ -5,6 +5,8 @@
 
 Meta-Scraper is a Visual Studio Code extension for inspecting and removing image metadata, helping you avoid leaking sensitive information when sharing images. It currently has **250+ installs** on the Visual Studio Code Marketplace.
 
+The separate [MetaScraper MCP app](mcp/README.md) serves ChatGPT and other MCP clients. Shared Lucci MCP routing and deployment conventions live in [lucci-xyz/mcp](https://github.com/lucci-xyz/mcp).
+
 ## Demo
 
 ![Demo](images/output.gif)
