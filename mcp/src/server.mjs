@@ -7,8 +7,16 @@ import { toolDefinitions, invokeTool, UI_URI } from "./tools.mjs";
 import { photoWorkflow, registerPhotoSkill } from "./skill.mjs";
 
 export function createMcpServer(store, baseUrl, html) {
+  const logoHost = new URL(baseUrl).host === "sandbox.mcp.luccilabs.xyz"
+    ? "sandbox.mcp.luccilabs.xyz"
+    : "mcp.luccilabs.xyz";
   const server = new McpServer(
-    { name: "meta-scraper", version: "0.1.0" },
+    {
+      name: "meta-scraper",
+      title: "MetaScraper",
+      version: "0.1.0",
+      icons: [{ src: `https://${logoHost}/lucci-logo.png`, mimeType: "image/png", sizes: ["512x512"] }],
+    },
     {
       capabilities: { extensions: { "io.modelcontextprotocol/skills": {} } },
       instructions: photoWorkflow,
